@@ -1,0 +1,32 @@
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# ── 环境 ──
+.env
+.venv/
+venv/
+env/
+
+# ── IDE ──
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── 数据 ──
+data/chroma_db/
+*.pdf
+
+# ── 系统 ──
+.DS_Store
+Thumbs.db
+
+# ── Node (前端) ──
+node_modules/
+frontend/dist/

@@ -79,11 +79,7 @@ export const auditQueryStream = (
     onDone: (answer: string) => void,
     onError?: (error: string) => void,
 ) => {
-    const eventSource = new EventSource(
-        `${API_BASE}/audit/query/stream?` + new URLSearchParams({ query }),
-    );
-
-    // SSE 需要 POST, EventSource 只支持 GET, 所以这里用 fetch 替代
+    // SSE 需要 POST，这里直接使用 fetch 替代原生只能 GET 的 EventSource
     fetch(`${API_BASE}/audit/query/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -112,8 +108,6 @@ export const auditQueryStream = (
             }
         }
     }).catch((err) => onError?.(err.message));
-
-    eventSource.close();
 };
 
 export default api;

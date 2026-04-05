@@ -122,13 +122,8 @@ class LLMClient:
         return model_map.get(role, self._settings.LLM_MODEL_GENERATOR)
 
 
-# ── 全局单例 ──
-_llm_client: LLMClient | None = None
-
-
+# ── 依赖注入支持 ──
+@lru_cache()
 def get_llm_client() -> LLMClient:
-    """获取 LLM 客户端单例"""
-    global _llm_client
-    if _llm_client is None:
-        _llm_client = LLMClient()
-    return _llm_client
+    """获取 LLM 客户端实例 (结合 Depends 使用并重用 AsyncOpenAI 链接池)"""
+    return LLMClient()

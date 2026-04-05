@@ -4,7 +4,7 @@ VeriMind-Med API 路由
 
 import time
 import logging
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 from app.config import get_settings
 from app.models.schemas import (
@@ -39,7 +39,10 @@ async def health_check():
 
 
 @router.post("/audit/query", response_model=AuditQueryResponse, tags=["审计"])
-async def audit_query(request: AuditQueryRequest):
+async def audit_query(
+    request: AuditQueryRequest, 
+    llm: get_llm_client = Depends(get_llm_client)
+):
     """
     医药合规审计查询 (非流式)
 
@@ -50,7 +53,6 @@ async def audit_query(request: AuditQueryRequest):
 
     # TODO: 阶段三实现完整 Agent DAG, 当前返回模拟数据
     try:
-        llm = get_llm_client()
         answer = await llm.generate(
             prompt=request.query,
             system_prompt="你是一个医药合规审计助手。请简要回答用户的医药相关问题。",
@@ -80,7 +82,10 @@ async def audit_query(request: AuditQueryRequest):
 
 
 @router.post("/audit/query/stream", tags=["审计"])
-async def audit_query_stream(request: AuditQueryRequest):
+async def audit_query_stream(
+    request: AuditQueryRequest,
+    llm: get_llm_client = Depends(get_llm_client)
+):
     """
     医药合规审计查询 (SSE 流式)
 
@@ -90,8 +95,6 @@ async def audit_query_stream(request: AuditQueryRequest):
 
     async def event_generator():
         try:
-            llm = get_llm_client()
-
             # 发送开始事件
             yield f"data: {json.dumps({'type': 'start', 'query': request.query})}\n\n"
 

@@ -14,6 +14,7 @@ chromadb>=0.5.0
 # ── PDF 解析 ──
 pymupdf>=1.24.0
 pymupdf4llm>=0.0.10
+pdfplumber>=0.11.0
 
 # ── Agent 编排 (阶段三引入) ──
 langgraph>=0.2.0

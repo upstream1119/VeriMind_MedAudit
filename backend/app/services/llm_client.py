@@ -5,7 +5,9 @@ VeriMind-Med 统一 LLM 客户端
 """
 
 import logging
+from functools import lru_cache
 from openai import AsyncOpenAI
+from langchain_openai import ChatOpenAI
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -125,5 +127,50 @@ class LLMClient:
 # ── 依赖注入支持 ──
 @lru_cache()
 def get_llm_client() -> LLMClient:
-    """获取 LLM 客户端实例 (结合 Depends 使用并重用 AsyncOpenAI 链接池)"""
+    """获取原生的 LLM 客户端实例 (用于非 Agent 的直接调用)"""
     return LLMClient()
+
+@lru_cache()
+def get_langchain_client(role: str = "generator") -> ChatOpenAI:
+    """获取供 LangGraph/LangChain 使用的 ChatOpenAI 实例"""
+    settings = get_settings()
+    
+    model_map = {
+        "generator": settings.LLM_MODEL_GENERATOR,
+        "judge": settings.LLM_MODEL_JUDGE,
+        "router": settings.LLM_MODEL_ROUTER,
+    }
+    model_name = model_map.get(role, settings.LLM_MODEL_GENERATOR)
+
+    return ChatOpenAI(
+        model=model_name,
+        api_key=settings.get_active_api_key(),
+        base_url=settings.get_base_url(),
+        temperature=settings.LLM_TEMPERATURE,
+        max_retries=2,
+    )
+
+def generate_structured_output(
+    system_prompt: str,
+    user_prompt: str,
+    output_schema: type,
+    role: str = "generator"
+):
+    """
+    通用的结构化输出包裹函数
+    利用 LangChain 的 with_structured_output 提取 JSON 化对象
+    """
+    llm = get_langchain_client(role=role)
+    structured_llm = llm.with_structured_output(output_schema)
+    
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt}
+    ]
+    
+    try:
+        result = structured_llm.invoke(messages)
+        return result
+    except Exception as e:
+        logger.error(f"[LLM] 调用结构化输出失败: {e}")
+        raise

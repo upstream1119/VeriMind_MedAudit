@@ -1,0 +1,127 @@
+[Retriever] 初始化完成: ./data/chroma_db
+[LangGraph] 引擎 DAG 结构编译完成
+[Agent::Router] 开始分析临床查询: 4岁儿童被诊断为幽门螺旋杆菌感染，能否使用克拉霉素三联疗法？
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Router] 决策结果 | 意图:DETAIL | 对齐语句:儿童 幽门螺杆菌感染 克拉霉素三联疗法
+[Agent::Retriever] 开始依据意图 DETAIL 检索: 儿童 幽门螺杆菌感染 克拉霉素三联疗法
+[Retriever] 查询: '儿童 幽门螺杆菌感染 克拉霉素三联疗法...' top_k=3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/embeddings "HTTP/1.1 200 OK"
+[Retriever] 粒度 128: 命中 3 条
+[Retriever] 检索完成, 共返回 3 条结果
+[Agent::Retriever] 检索成功, 共召回 3 条权威片段
+[Agent::Generator] 准备生成回答, 拥有证据数量: 3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Generator] 生成完毕, 字数: 56
+[Agent::Auditor] 启动裁判审计程序
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 429 Too Many Requests"
+Retrying request to /chat/completions in 0.485581 seconds
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 429 Too Many Requests"
+Retrying request to /chat/completions in 0.896368 seconds
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 429 Too Many Requests"
+[LLM] 调用结构化输出失败: Error code: 429 - {'error': {'code': '1302', 'message': '您的账户已达到速率限制，请您控制请求频率'}}
+[Agent::Auditor] 审计打分失败: Error code: 429 - {'error': {'code': '1302', 'message': '您的账户已达到速率限制，请您控制请求频率'}}
+[Agent::Router] 开始分析临床查询: 早产儿（胎龄32周，出生体重1.5kg）需补充维生素D，应给予多少剂量？
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Router] 决策结果 | 意图:DETAIL | 对齐语句:早产儿 胎龄32周 出生体重1.5kg 维生素D补充 剂量推荐
+[Agent::Retriever] 开始依据意图 DETAIL 检索: 早产儿 胎龄32周 出生体重1.5kg 维生素D补充 剂量推荐
+[Retriever] 查询: '早产儿 胎龄32周 出生体重1.5kg 维生素D补充 剂量推荐...' top_k=3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/embeddings "HTTP/1.1 200 OK"
+[Retriever] 粒度 128: 命中 3 条
+[Retriever] 检索完成, 共返回 3 条结果
+[Agent::Retriever] 检索成功, 共召回 3 条权威片段
+[Agent::Generator] 准备生成回答, 拥有证据数量: 3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Generator] 生成完毕, 字数: 35
+[Agent::Auditor] 启动裁判审计程序
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Auditor] 判决完成 | 忠实度得分:0.0 | 最终Trust-Score:1.4268 | 结果:REJECTED
+[Agent::Router] 开始分析临床查询: 3岁儿童因呼吸道感染就诊，能否使用左氧氟沙星？
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Router] 决策结果 | 意图:DETAIL | 对齐语句:儿童 呼吸道感染 左氧氟沙星
+[Agent::Retriever] 开始依据意图 DETAIL 检索: 儿童 呼吸道感染 左氧氟沙星
+[Retriever] 查询: '儿童 呼吸道感染 左氧氟沙星...' top_k=3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/embeddings "HTTP/1.1 200 OK"
+[Retriever] 粒度 128: 命中 3 条
+[Retriever] 检索完成, 共返回 3 条结果
+[Agent::Retriever] 检索成功, 共召回 3 条权威片段
+[Agent::Generator] 准备生成回答, 拥有证据数量: 3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Generator] 生成完毕, 字数: 33
+[Agent::Auditor] 启动裁判审计程序
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Auditor] 判决完成 | 忠实度得分:0.0 | 最终Trust-Score:1.4044 | 结果:REJECTED
+[Agent::Router] 开始分析临床查询: 6岁儿童确诊注意缺陷多动障碍（ADHD），是否可以使用阿托西汀？剂量如何确定？
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Router] 决策结果 | 意图:DETAIL | 对齐语句:儿童 6岁 注意缺陷多动障碍 ADHD 阿托西汀 剂量
+[Agent::Retriever] 开始依据意图 DETAIL 检索: 儿童 6岁 注意缺陷多动障碍 ADHD 阿托西汀 剂量
+[Retriever] 查询: '儿童 6岁 注意缺陷多动障碍 ADHD 阿托西汀 剂量...' top_k=3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/embeddings "HTTP/1.1 200 OK"
+[Retriever] 粒度 128: 命中 3 条
+[Retriever] 检索完成, 共返回 3 条结果
+[Agent::Retriever] 检索成功, 共召回 3 条权威片段
+[Agent::Generator] 准备生成回答, 拥有证据数量: 3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Generator] 生成完毕, 字数: 33
+[Agent::Auditor] 启动裁判审计程序
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Auditor] 判决完成 | 忠实度得分:0.0 | 最终Trust-Score:1.3541 | 结果:REJECTED
+[Agent::Router] 开始分析临床查询: 新生儿期（出生后7天）发生细菌感染，可以使用头孢曲松治疗吗？
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Router] 决策结果 | 意图:DETAIL | 对齐语句:新生儿期（出生后7天） 细菌感染 头孢曲松
+[Agent::Retriever] 开始依据意图 DETAIL 检索: 新生儿期（出生后7天） 细菌感染 头孢曲松
+[Retriever] 查询: '新生儿期（出生后7天） 细菌感染 头孢曲松...' top_k=3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/embeddings "HTTP/1.1 200 OK"
+[Retriever] 粒度 128: 命中 3 条
+[Retriever] 检索完成, 共返回 3 条结果
+[Agent::Retriever] 检索成功, 共召回 3 条权威片段
+[Agent::Generator] 准备生成回答, 拥有证据数量: 3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Generator] 生成完毕, 字数: 46
+[Agent::Auditor] 启动裁判审计程序
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Auditor] 判决完成 | 忠实度得分:0.0 | 最终Trust-Score:1.4387 | 结果:REJECTED
+[Agent::Router] 开始分析临床查询: 25kg的8岁儿童需要使用阿莫西林克拉维酸钾，一天需要吃多少剂量？
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Router] 决策结果 | 意图:DETAIL | 对齐语句:儿童 体重25kg 年龄8岁 阿莫西林克拉维酸钾 剂量 用法 用量
+[Agent::Retriever] 开始依据意图 DETAIL 检索: 儿童 体重25kg 年龄8岁 阿莫西林克拉维酸钾 剂量 用法 用量
+[Retriever] 查询: '儿童 体重25kg 年龄8岁 阿莫西林克拉维酸钾 剂量 用法 用量...' top_k=3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/embeddings "HTTP/1.1 200 OK"
+[Retriever] 粒度 128: 命中 3 条
+[Retriever] 检索完成, 共返回 3 条结果
+[Agent::Retriever] 检索成功, 共召回 3 条权威片段
+[Agent::Generator] 准备生成回答, 拥有证据数量: 3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Generator] 生成完毕, 字数: 54
+[Agent::Auditor] 启动裁判审计程序
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Auditor] 判决完成 | 忠实度得分:0.0 | 最终Trust-Score:1.3923 | 结果:REJECTED
+[Agent::Router] 开始分析临床查询: 儿童因癫痫发作正在使用苯巴比妥，同时是否可以使用氯霉素控制感染？
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Router] 决策结果 | 意图:DETAIL | 对齐语句:儿童癫痫 苯巴比妥 氯霉素 相互作用 抗感染治疗
+[Agent::Retriever] 开始依据意图 DETAIL 检索: 儿童癫痫 苯巴比妥 氯霉素 相互作用 抗感染治疗
+[Retriever] 查询: '儿童癫痫 苯巴比妥 氯霉素 相互作用 抗感染治疗...' top_k=3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/embeddings "HTTP/1.1 200 OK"
+[Retriever] 粒度 128: 命中 3 条
+[Retriever] 检索完成, 共返回 3 条结果
+[Agent::Retriever] 检索成功, 共召回 3 条权威片段
+[Agent::Generator] 准备生成回答, 拥有证据数量: 3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Generator] 生成完毕, 字数: 51
+[Agent::Auditor] 启动裁判审计程序
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Auditor] 判决完成 | 忠实度得分:0.0 | 最终Trust-Score:1.4598 | 结果:REJECTED
+[Agent::Router] 开始分析临床查询: 10岁儿童（30kg）因重症感染入院，医生考虑使用万古霉素，应如何确定剂量和监测方案？
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Router] 决策结果 | 意图:DETAIL | 对齐语句:儿童 10岁 体重30kg 重症感染 万古霉素 剂量方案 药物监测
+[Agent::Retriever] 开始依据意图 DETAIL 检索: 儿童 10岁 体重30kg 重症感染 万古霉素 剂量方案 药物监测
+[Retriever] 查询: '儿童 10岁 体重30kg 重症感染 万古霉素 剂量方案 药物监测...' top_k=3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/embeddings "HTTP/1.1 200 OK"
+[Retriever] 粒度 128: 命中 3 条
+[Retriever] 检索完成, 共返回 3 条结果
+[Agent::Retriever] 检索成功, 共召回 3 条权威片段
+[Agent::Generator] 准备生成回答, 拥有证据数量: 3
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Generator] 生成完毕, 字数: 33
+[Agent::Auditor] 启动裁判审计程序
+HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+[Agent::Auditor] 判决完成 | 忠实度得分:0.0 | 最终Trust-Score:1.4431 | 结果:REJECTED

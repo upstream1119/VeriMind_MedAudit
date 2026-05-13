@@ -48,17 +48,24 @@ class ZhipuEmbeddingFunction:
             "dashscope": settings.DASHSCOPE_API_KEY,
         }
         provider = settings.EMBEDDING_PROVIDER
+        self._provider = provider
         self._client = OpenAI(
             api_key=api_keys[provider],
             base_url=embedding_base_urls[provider],
         )
         self._model = settings.EMBEDDING_MODEL
 
+    def _batch_size(self) -> int:
+        """DashScope OpenAI 兼容 embedding 接口单批最多 10 条。"""
+        if self._provider == "dashscope":
+            return 10
+        return 64
+
     def __call__(self, input: list[str]) -> list[list[float]]:
         """批量生成 Embedding 向量"""
         # OpenAI 兼容协议: 一次最多传入 2048 条
         embeddings = []
-        batch_size = 64  # 保守批次大小, 避免超限
+        batch_size = self._batch_size()
         for i in range(0, len(input), batch_size):
             batch = input[i:i + batch_size]
             response = self._client.embeddings.create(

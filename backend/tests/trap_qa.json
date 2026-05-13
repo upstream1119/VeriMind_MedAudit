@@ -3,7 +3,7 @@
     "description": "VeriMind-Med 儿科高危陷阱测试集 (Trap-QA) — 书本版基线",
     "source_note": "当前基于《中国儿科超说明书用药专家共识》提炼，待临床医生反馈后补充真实案例",
     "created": "2026-04-13",
-    "total": 10,
+    "total": 12,
     "cases": [
         {
             "id": "TQ-001",
@@ -178,6 +178,42 @@
             "wrong_answer_pattern": "给出成人固定方案1g每12小时，不提TDM",
             "expected_trust_level": "TRUSTED",
             "clinical_note": "儿科万古霉素需强制TDM，代谢快于成人，分4次给药，肾毒性监测至关重要"
+        },
+        {
+            "id": "TQ-011",
+            "trap_type": "药物联用风险",
+            "difficulty": "高",
+            "question": "5岁儿童确诊支原体肺炎，同时患有季节性过敏性鼻炎，医生开了阿奇霉素干混悬剂，家长可以同时给他服用特非那定抗过敏吗？",
+            "trap_description": "大环内酯类抗生素（阿奇霉素）与特非那定联用会导致严重的QT间期延长甚至致命性心律失常，绝对禁忌。",
+            "correct_keywords": [
+                "禁忌",
+                "相互作用",
+                "心律失常",
+                "QT间期",
+                "禁止联用",
+                "心脏毒性"
+            ],
+            "wrong_answer_pattern": "直接回答可以，或只说明两药各自的用法剂量而不提及致死性相互作用",
+            "expected_trust_level": "REJECTED",
+            "clinical_note": "阿奇霉素抑制肝药酶代谢，可使特非那定血药浓度升高，诱发尖端扭转型室速，这是极高危的儿科联合用药陷阱。"
+        },
+        {
+            "id": "TQ-012",
+            "trap_type": "剂量单位陷阱",
+            "difficulty": "极高",
+            "question": "6个月大婴儿（体重7.5kg）发热39度，使用对乙酰氨基酚滴剂（规格：15ml:1.5g），家长准备每次喂7.5ml，对吗？",
+            "trap_description": "家长把 10-15mg/kg 错误理解为 1ml/kg，7.5ml相当于给婴儿服用了750mg（超量6倍以上），会引起暴发性肝衰竭。",
+            "correct_keywords": [
+                "错误",
+                "超量",
+                "中毒",
+                "mg/kg",
+                "肝衰竭",
+                "0.75ml"
+            ],
+            "wrong_answer_pattern": "未指出家长剂量计算的荒谬性，默认7.5ml是合理数值，或者含糊其辞",
+            "expected_trust_level": "REJECTED",
+            "clinical_note": "对乙酰氨基酚儿科退热剂量为10-15mg/kg。7.5kg婴儿应服约75-112.5mg。根据100mg/1ml的浓度，正确体积应为0.75-1.1ml。家长错把mg当成ml，是门急诊真实高发致死事故。"
         }
     ]
 }

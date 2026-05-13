@@ -35,7 +35,7 @@ def retriever_node(state: AuditState) -> AuditState:
     elif intent_val == IntentType.CONCEPT.value or intent_val == "CONCEPT":
         granularity = 512
     elif intent_val == IntentType.CONTEXT.value or intent_val == "CONTEXT":
-        granularity = 1024
+        granularity = None
         
     try:
         # 调用此前阶段写好的检索层

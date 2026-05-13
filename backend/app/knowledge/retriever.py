@@ -18,8 +18,11 @@ VeriMind-Med 多粒度检索服务层 (Multi-Granularity Retriever)
 
 from __future__ import annotations
 
+import json
 import logging
+import re
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Literal
 
 import chromadb
@@ -29,17 +32,43 @@ from app.knowledge.indexer import ZhipuEmbeddingFunction, _COLLECTION_NAMES
 
 logger = logging.getLogger(__name__)
 
+_REFERENCE_HEADING_RE = re.compile(r"^\s*##\s*[［\[]?\s*参\s*考\s*文\s*献", re.MULTILINE)
+_PICTURE_PLACEHOLDER_RE = re.compile(
+    r"\*\*==>\s*picture\s*\[[^\]]+\]\s*intentionally omitted\s*<==\*\*",
+    re.IGNORECASE,
+)
+_PICTURE_TEXT_MARKER_RE = re.compile(
+    r"\*\*-----\s*(Start|End)\s+of picture text\s*-----\*\*",
+    re.IGNORECASE,
+)
+
 # 文件名关键词 → 权威等级
 _AUTHORITY_KEYWORD_MAP = {
     "处方集": "national_pharmacopoeia",
+    "基本药物目录": "national_pharmacopoeia",
     "basic_drug": "national_pharmacopoeia",
     "诊疗指南": "clinical_guideline",
+    "诊疗规范": "clinical_guideline",
+    "肺炎支原体肺炎": "clinical_guideline",
+    "社区获得性肺炎": "clinical_guideline",
     "内科分册": "clinical_guideline",
     "guideline": "clinical_guideline",
     "超说明书": "expert_consensus",
     "专家共识": "expert_consensus",
     "consensus": "expert_consensus",
 }
+
+_REQUIRED_TERM_GROUPS = [
+    ("阿奇霉素",),
+    ("氨溴索", "沐舒坦"),
+    ("红霉素",),
+    ("罗红霉素",),
+    ("克拉霉素",),
+    ("阿莫西林",),
+    ("美罗培南",),
+    ("头孢",),
+    ("静脉", "静点", "静注", "静滴", "静脉注射", "静脉滴注"),
+]
 
 
 # ────────────────────────────────────────────
@@ -81,6 +110,16 @@ class MultiGranularityRetriever:
         settings = get_settings()
         self._settings = settings
         self._persist_dir = persist_dir or settings.CHROMA_PERSIST_DIR
+        self._index_status = self._load_index_status()
+
+        if not self._index_status.get("ready", False):
+            logger.warning(
+                "[Retriever] 索引未就绪，检索将返回空证据: %s",
+                self._index_status.get("reason") or self._index_status.get("missing_sources"),
+            )
+            self._chroma = None
+            self._embed_fn = None
+            return
 
         # ChromaDB 只读客户端
         self._chroma = chromadb.PersistentClient(path=self._persist_dir)
@@ -109,6 +148,13 @@ class MultiGranularityRetriever:
         Returns:
             按 final_score 降序排列的检索结果列表
         """
+        if not self._index_status.get("ready", False):
+            logger.warning(
+                "[Retriever] 索引未通过完整性校验，拒绝返回伪完整证据: %s",
+                self._index_status.get("reason") or self._index_status.get("missing_sources"),
+            )
+            return []
+
         k = top_k or self._settings.RETRIEVAL_TOP_K
 
         # 生成查询向量
@@ -159,12 +205,16 @@ class MultiGranularityRetriever:
             chunk.final_score = chunk.relevance_score * chunk.authority_weight
 
         all_results.sort(key=lambda c: c.final_score, reverse=True)
+        all_results = self._apply_required_term_filter(query, all_results)
 
         logger.info(f"[Retriever] 检索完成, 共返回 {len(all_results)} 条结果")
         return all_results
 
     def get_stats(self) -> dict[str, int]:
         """获取各 Collection 的文档数量"""
+        if self._chroma is None:
+            return {name: 0 for name in _COLLECTION_NAMES.values()}
+
         stats = {}
         for g, name in _COLLECTION_NAMES.items():
             try:
@@ -175,6 +225,31 @@ class MultiGranularityRetriever:
         return stats
 
     # ── 内部方法 ──
+
+    def _load_index_status(self) -> dict[str, object]:
+        """读取知识库完整性状态；缺失或损坏时保守视为未就绪。"""
+        status_path = Path(self._persist_dir) / "index_status.json"
+        if not status_path.exists():
+            return {
+                "ready": False,
+                "reason": f"{status_path.name} missing",
+            }
+
+        try:
+            status = json.loads(status_path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            return {
+                "ready": False,
+                "reason": f"failed to read {status_path.name}: {exc}",
+            }
+
+        if not isinstance(status, dict):
+            return {
+                "ready": False,
+                "reason": f"{status_path.name} is not a JSON object",
+            }
+        status.setdefault("ready", False)
+        return status
 
     def _parse_chroma_response(
         self, response: dict, granularity: int
@@ -187,6 +262,9 @@ class MultiGranularityRetriever:
         distances = response.get("distances", [[]])[0]
 
         for doc, meta, dist in zip(documents, metadatas, distances):
+            if self._is_noise_chunk(doc):
+                continue
+
             # 相关性分数: 从 L2 距离转换, 距离越小分越高
             relevance = 1.0 / (1.0 + dist)
 
@@ -207,6 +285,36 @@ class MultiGranularityRetriever:
             ))
 
         return results
+
+    @staticmethod
+    def _is_noise_chunk(content: str) -> bool:
+        """过滤明显不应作为临床证据展示的参考文献与解析占位噪声。"""
+        if not content:
+            return True
+        if _REFERENCE_HEADING_RE.search(content):
+            return True
+        if _PICTURE_PLACEHOLDER_RE.search(content):
+            return True
+        if _PICTURE_TEXT_MARKER_RE.search(content):
+            return True
+        return False
+
+    @staticmethod
+    def _apply_required_term_filter(query: str, chunks: list[RetrievedChunk]) -> list[RetrievedChunk]:
+        """If a concrete drug is named in the query, evidence must mention it or an alias."""
+        required_groups = [
+            group for group in _REQUIRED_TERM_GROUPS
+            if any(term in query for term in group)
+        ]
+        if not required_groups:
+            return chunks
+
+        filtered = []
+        for chunk in chunks:
+            content = getattr(chunk, "content", "") or ""
+            if all(any(term in content for term in group) for group in required_groups):
+                filtered.append(chunk)
+        return filtered
 
     def _get_authority_weight(self, filename: str) -> float:
         """根据文件名关键词返回对应的权威度权重"""

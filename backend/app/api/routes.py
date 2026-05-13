@@ -21,6 +21,30 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+def _serialize_evidence_chunks(chunks):
+    """将检索结果转换为前端稳定消费的证据结构。"""
+    payload = []
+    for chunk in chunks:
+        page_number = getattr(chunk, "page_number", None)
+        payload.append(
+            {
+                "content": chunk.content,
+                "source": chunk.source_file,
+                "page": page_number,
+            }
+        )
+    return payload
+
+
+def _resolve_answer_from_state(state: dict) -> str:
+    """兼容旧字段 answer 与当前图状态 draft_answer。"""
+    return (
+        state.get("draft_answer")
+        or state.get("answer")
+        or "内部错误: 引擎未生成回答"
+    )
+
+
 @router.get("/health", response_model=HealthResponse, tags=["系统"])
 async def health_check():
     """健康检查 — 返回系统状态和当前模型配置"""
@@ -40,8 +64,7 @@ async def health_check():
 
 @router.post("/audit/query", response_model=AuditQueryResponse, tags=["审计"])
 async def audit_query(
-    request: AuditQueryRequest, 
-    llm: get_llm_client = Depends(get_llm_client)
+    request: AuditQueryRequest,
 ):
     """
     医药合规审计查询 (非流式)
@@ -49,31 +72,24 @@ async def audit_query(
     完整的 Agent DAG 流程:
     用户提问 → 知识对齐 → 意图路由 → 三粒度检索 → 推理生成 → 审计门控 → 返回
     """
+    from app.agents.graph import audit_engine
     start_time = time.time()
 
-    # TODO: 阶段三实现完整 Agent DAG, 当前返回模拟数据
     try:
-        answer = await llm.generate(
-            prompt=request.query,
-            system_prompt="你是一个医药合规审计助手。请简要回答用户的医药相关问题。",
-            model_role="generator",
-        )
+        # 同步等待整个图跑完
+        final_state = await audit_engine.ainvoke({"original_query": request.query})
 
         processing_time = time.time() - start_time
 
         return AuditQueryResponse(
             query=request.query,
-            normalized_query=request.query,
-            intent=IntentType.CONCEPT,
-            answer=answer,
-            trust_score=TrustScoreDetail(
-                s_ret=0.0,
-                s_faith=0.0,
-                w_authority=0.0,
-                trust_score=0.0,
-                trust_level=TrustLevel.WARNING,
-            ),
-            evidence=[],
+            normalized_query=final_state.get("normalized_query", request.query),
+            intent=final_state.get("intent", IntentType.CONCEPT),
+            answer=_resolve_answer_from_state(final_state),
+            trust_score=final_state.get("trust_score", TrustScoreDetail(
+                s_ret=0.0, s_faith=0.0, w_authority=0.0, trust_score=0.0, trust_level=TrustLevel.REJECTED
+            )),
+            evidence=_serialize_evidence_chunks(final_state.get("evidence", [])),
             processing_time=round(processing_time, 3),
         )
     except Exception as e:
@@ -84,36 +100,68 @@ async def audit_query(
 @router.post("/audit/query/stream", tags=["审计"])
 async def audit_query_stream(
     request: AuditQueryRequest,
-    llm: get_llm_client = Depends(get_llm_client)
 ):
     """
     医药合规审计查询 (SSE 流式)
 
-    前端通过 EventSource 接收逐 token 的流式回答
+    前端通过 EventSource 接收图流转状态，用于展示“执行轨迹”及最终结果
     """
     import json
+    from app.agents.graph import audit_engine
 
     async def event_generator():
         try:
             # 发送开始事件
             yield f"data: {json.dumps({'type': 'start', 'query': request.query})}\n\n"
 
-            # 流式生成回答
-            full_answer = ""
-            async for token in llm.generate_stream(
-                prompt=request.query,
-                system_prompt="你是一个医药合规审计助手。请简要回答用户的医药相关问题。",
-                model_role="generator",
-            ):
-                full_answer += token
-                yield f"data: {json.dumps({'type': 'token', 'content': token})}\n\n"
+            # astream_events 能够深度捕获所有图内 LLM 调用的实时 Token
+            async for event in audit_engine.astream_events({"original_query": request.query}, version="v2"):
+                kind = event["event"]
 
-            # 发送完成事件 (含 Trust-Score)
-            yield f"data: {json.dumps({'type': 'done', 'answer': full_answer})}\n\n"
+                # 1. 捕获大模型逐字生成的 Token
+                if kind == "on_chat_model_stream":
+                    content = event["data"]["chunk"].content
+                    if content:
+                        yield f"data: {json.dumps({'type': 'token', 'content': content}, ensure_ascii=False)}\n\n"
+
+                # 2. 捕获每个大节点跑完后的状态更新
+                elif kind == "on_chain_end":
+                    # name 对应了我们的 router, retriever, generator, auditor
+                    node_name = event["name"]
+                    if node_name in ["router", "retriever", "generator", "auditor"]:
+                        state_update = event["data"].get("output")
+                        if isinstance(state_update, dict):
+                            payload = {
+                                "type": "node_update",
+                                "node": node_name,
+                            }
+                            if "intent" in state_update:
+                                payload["intent"] = state_update["intent"].value if hasattr(state_update["intent"], "value") else state_update["intent"]
+                            if "normalized_query" in state_update:
+                                payload["normalized_query"] = state_update["normalized_query"]
+
+                            # 携带证据核心字段给前端展示
+                            if "evidence" in state_update:
+                                payload["evidence_count"] = len(state_update["evidence"])
+                                payload["evidence"] = _serialize_evidence_chunks(state_update["evidence"])
+
+                            if "draft_answer" in state_update:
+                                payload["answer"] = state_update["draft_answer"]
+
+                            if "trust_score" in state_update:
+                                ts = state_update["trust_score"]
+                                payload["trust_score"] = ts.dict() if hasattr(ts, "dict") else ts
+
+                            # 仅当有实际状态更新时下发
+                            if len(payload) > 2:
+                                yield f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+            # 发送完成事件
+            yield f"data: {json.dumps({'type': 'done'})}\n\n"
 
         except Exception as e:
             logger.error(f"流式查询失败: {e}")
-            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)}, ensure_ascii=False)}\n\n"
 
     return StreamingResponse(
         event_generator(),

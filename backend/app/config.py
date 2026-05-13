@@ -5,13 +5,17 @@ VeriMind-Med 全局配置管理
 """
 
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import Field, field_validator
 from typing import Literal
 from functools import lru_cache
+from pathlib import Path
 
 
 class Settings(BaseSettings):
     """应用配置 — 从 .env 文件或环境变量加载"""
+
+    _ENV_FILE = Path(__file__).resolve().parents[1] / ".env"
+    _CHROMA_DIR = Path(__file__).resolve().parents[1] / "data" / "chroma_db"
 
     # ── 应用基础 ──
     APP_NAME: str = "VeriMind-Med"
@@ -56,7 +60,7 @@ class Settings(BaseSettings):
 
     # ── 向量检索 ──
     CHROMA_PERSIST_DIR: str = Field(
-        default="./data/chroma_db", description="ChromaDB 持久化目录"
+        default=str(_CHROMA_DIR), description="ChromaDB 持久化目录"
     )
     RETRIEVAL_TOP_K: int = Field(default=3, description="Top-K 检索窗口")
 
@@ -92,13 +96,26 @@ class Settings(BaseSettings):
     )
 
     # ── CORS ──
-    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"]
 
     model_config = {
-        "env_file": ".env",
+        "env_file": str(_ENV_FILE),
         "env_file_encoding": "utf-8",
         "case_sensitive": True,
     }
+
+    @field_validator("DEBUG", mode="before")
+    @classmethod
+    def _parse_debug_value(cls, value):
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {"1", "true", "yes", "on", "debug", "dev"}:
+                return True
+            if normalized in {"0", "false", "no", "off", "release", "prod", "production"}:
+                return False
+        return value
 
     def get_active_api_key(self) -> str:
         """根据当前 LLM_PROVIDER 返回对应的 API Key"""

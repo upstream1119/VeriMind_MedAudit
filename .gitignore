@@ -21,7 +21,12 @@ env/
 
 # ── 数据 ──
 data/chroma_db/
+backend/data/chroma_db/
 *.pdf
+data/guidelines/**/*.pdf
+docs/test_runs/*
+!docs/test_runs/2026-05-13_13-13-54/
+!docs/test_runs/2026-05-13_13-13-54/**
 
 # ── 系统 ──
 .DS_Store
@@ -30,3 +35,12 @@ Thumbs.db
 # ── Node (前端) ──
 node_modules/
 frontend/dist/
+# Personal / AI collaboration notes (local only)
+AGENTS.md
+AI_CONTEXT.md
+ai_plans/
+.agents/
+.local_backups/
+阶段性工作总结/
+简历面试指南与项目亮点深度剖析.md
+🩺 项目构思文档.md

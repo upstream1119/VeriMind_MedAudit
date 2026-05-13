@@ -9,7 +9,7 @@ VeriMind-Med 智能体节点: Auditor (幻觉评分与门控裁判)
 """
 
 import logging
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, Field
 from app.agents.state import AuditState
 from app.services.llm_client import generate_structured_output
 from app.services.trust_score import compute_trust_score
@@ -18,18 +18,22 @@ logger = logging.getLogger(__name__)
 
 class FaithfulnessScore(BaseModel):
     score: float = Field(..., ge=0, le=10, description="对源文档的忠实度打分，0 表示完全无中生有产生幻觉，10 表示严丝合缝")
-    reason: str = Field(..., description="打分理由，简要说明判断依据")
+    reason: str = Field(
+        ...,
+        validation_alias=AliasChoices("reason", "reasoning"),
+        description="打分理由，简要说明判断依据",
+    )
 
 AUDITOR_SYSTEM_PROMPT = """你是一个冷酷、严厉的医疗大模型审计裁判 (Judge)。
 你的唯一任务是判断【AI生成的草稿解答】是否 100% 忠实于【源文献片段】。
 
 评分逻辑 (0-10分):
-- 10分: 完美。解答完全来自源文献，没有任何发散或瞎编。
-- 7-9分: 优秀。有极少量润色，但核心药物剂量、适应症、禁忌完全吻合。
+- 10分: 完美。解答完全来自源文献。特殊情况：如果草稿明确指出了“文献中未提及/依据不足”，这是对【文献无此信息】最忠实的反映，必须给满分 10分！
+- 7-9分: 优秀。有极少量润色，或附加了必要的常规安全免责声明（如提示评估肝肾功能/过敏史等），且核心剂量、禁忌与文献完全吻合。
 - 4-6分: 危险。有部分内容超出了文献范围，或者对数字（如剂量、年龄）有含糊、篡改的情况。
-- 0-3分: 致命幻觉或无此信息。只要文献中根本没提，但它装模作样地作答了，必须给 0 分。
+- 0-3分: 致命幻觉。只要文献中根本没提，但它装模作样编造了肯定的用药答复或具体剂量，必须给 0 分。
 
-即使生成内容在现实中"可能是常识", 只要源片段里没有, 就必须扣分判定为幻觉。
+即使生成内容在现实中"可能是常识", 只要是对核心医学决策的盲目填充, 只要源片段里没有, 就必须扣分。
 
 [源文献片段]:
 {context}

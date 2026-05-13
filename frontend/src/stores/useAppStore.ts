@@ -1,9 +1,9 @@
 /**
- * VeriMind-Med 全局状态管理 (Zustand)
+ * VeriMind-MedAudit 全局状态管理 (Zustand)
  */
 
 import { create } from 'zustand';
-import type { AuditQueryResponse, TrustLevel } from '../services/api';
+import type { TrustLevel, TrustScoreDetail, RetrievedChunk } from '../services/api';
 
 export interface ChatMessage {
     id: string;
@@ -11,7 +11,12 @@ export interface ChatMessage {
     content: string;
     timestamp: Date;
     trustLevel?: TrustLevel;
-    auditResult?: AuditQueryResponse;
+    trustScore?: TrustScoreDetail;
+    evidence?: RetrievedChunk[];
+    intent?: string;
+    normalizedQuery?: string;
+    evidenceCount?: number;
+    currentNode?: string;
     isStreaming?: boolean;
 }
 
@@ -20,13 +25,13 @@ interface AppState {
     messages: ChatMessage[];
     isLoading: boolean;
     addMessage: (msg: ChatMessage) => void;
-    updateLastMessage: (content: string) => void;
+    updateLastAssistant: (patch: Partial<ChatMessage>) => void;
     setLoading: (loading: boolean) => void;
     clearMessages: () => void;
 
-    // ── 证据面板 ──
-    selectedAuditResult: AuditQueryResponse | null;
-    setSelectedAuditResult: (result: AuditQueryResponse | null) => void;
+    // ── 证据面板：当前选中的消息 ──
+    selectedMessageId: string | null;
+    setSelectedMessageId: (id: string | null) => void;
 
     // ── 主题 ──
     isDarkMode: boolean;
@@ -39,14 +44,22 @@ export const useAppStore = create<AppState>((set) => ({
     isLoading: false,
     addMessage: (msg) =>
         set((state) => ({ messages: [...state.messages, msg] })),
-    updateLastMessage: (content) =>
+    updateLastAssistant: (patch: Partial<ChatMessage> & { appendContent?: string }) =>
         set((state) => {
             const messages = [...state.messages];
-            if (messages.length > 0) {
-                messages[messages.length - 1] = {
-                    ...messages[messages.length - 1],
-                    content,
-                };
+            // 从尾部找到最后一条 assistant 消息
+            for (let i = messages.length - 1; i >= 0; i--) {
+                if (messages[i].role === 'assistant') {
+                    const currentMsg = messages[i];
+                    messages[i] = { ...currentMsg, ...patch };
+                    // 处理流式追加
+                    if (patch.appendContent) {
+                        messages[i].content = (currentMsg.content || '') + patch.appendContent;
+                        // 清除原补丁中的 appendContent 防止泄漏到 state
+                        delete (messages[i] as any).appendContent;
+                    }
+                    break;
+                }
             }
             return { messages };
         }),
@@ -54,8 +67,8 @@ export const useAppStore = create<AppState>((set) => ({
     clearMessages: () => set({ messages: [] }),
 
     // ── 证据面板 ──
-    selectedAuditResult: null,
-    setSelectedAuditResult: (result) => set({ selectedAuditResult: result }),
+    selectedMessageId: null,
+    setSelectedMessageId: (id) => set({ selectedMessageId: id }),
 
     // ── 主题 ──
     isDarkMode: true,

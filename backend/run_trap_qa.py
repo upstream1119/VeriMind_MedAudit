@@ -135,9 +135,9 @@ async def main():
     cases = load_questions()
     summary_rows = []
 
-    # 仅运行第 3 题 (TQ-003) 补充数据
-    START_OFFSET = 2
-    cases_test = cases[START_OFFSET : START_OFFSET+1]
+    # 运行最后补充的题目 (TQ-011, TQ-012)
+    START_OFFSET = 10
+    cases_test = cases[START_OFFSET:]
 
     for i, case in enumerate(cases_test, start=START_OFFSET):
         print(f"[{i+1}/{len(cases)}] 正在测试 {case['id']}: {case['question'][:30]}...")

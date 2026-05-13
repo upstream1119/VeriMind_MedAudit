@@ -13,14 +13,26 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
+import fitz
 import pdfplumber
 import pymupdf4llm
 
 logger = logging.getLogger(__name__)
+
+_PICTURE_PLACEHOLDER_RE = re.compile(
+    r"\*\*==>\s*picture\s*\[[^\]]+\]\s*intentionally omitted\s*<==\*\*",
+    re.IGNORECASE,
+)
+_PICTURE_TEXT_MARKER_RE = re.compile(
+    r"\*\*-----\s*(Start|End)\s+of picture text\s*-----\*\*<br>",
+    re.IGNORECASE,
+)
+_REFERENCE_HEADING_RE = re.compile(r"^\s*##\s*[［\[]?\s*参\s*考\s*文\s*献", re.MULTILINE)
 
 
 # ────────────────────────────────────────────
@@ -42,6 +54,16 @@ class ParsedBlock:
     content: str               # Markdown 格式的文本内容
     metadata: BlockMetadata    # 溯源元数据
     token_estimate: int = 0    # 粗略 token 估算 (中文≈字数×2)
+
+
+@dataclass
+class SourceInspection:
+    """PDF 入库前的可解析性体检结果。"""
+    page_count: int
+    sampled_pages: int
+    text_pages: int
+    image_pages: int
+    scan_heavy: bool
 
 
 # ────────────────────────────────────────────
@@ -97,6 +119,41 @@ class DualTrackMedicalParser:
         logger.info(f"[Parser] 解析完成: 共 {len(all_blocks)} 个块")
         return all_blocks
 
+    def inspect_source(self, pdf_path: str | Path, sample_pages: int = 30) -> SourceInspection:
+        """抽样检查 PDF 是否以扫描图片页为主，避免静默产出空索引。"""
+        pdf_path = Path(pdf_path)
+        if not pdf_path.exists():
+            raise FileNotFoundError(f"PDF 文件不存在: {pdf_path}")
+
+        doc = fitz.open(str(pdf_path))
+        try:
+            page_count = doc.page_count
+            sampled_pages = min(page_count, max(0, sample_pages))
+            text_pages = 0
+            image_pages = 0
+
+            for page_idx in range(sampled_pages):
+                page = doc.load_page(page_idx)
+                text = (page.get_text() or "").strip()
+                if len(text) >= self._min_text_length:
+                    text_pages += 1
+                if page.get_images(full=True):
+                    image_pages += 1
+
+            text_ratio = text_pages / sampled_pages if sampled_pages else 0
+            image_ratio = image_pages / sampled_pages if sampled_pages else 0
+            scan_heavy = sampled_pages > 0 and text_ratio < 0.2 and image_ratio >= 0.8
+
+            return SourceInspection(
+                page_count=page_count,
+                sampled_pages=sampled_pages,
+                text_pages=text_pages,
+                image_pages=image_pages,
+                scan_heavy=scan_heavy,
+            )
+        finally:
+            doc.close()
+
     # ── 轨道 A: pymupdf4llm 文本提取 ──
     def _track_a_text(self, pdf_path: Path, file_hash: str) -> list[ParsedBlock]:
         """使用 pymupdf4llm 提取连续文本, 自动校正双栏排版"""
@@ -109,10 +166,10 @@ class DualTrackMedicalParser:
         )
 
         for page_data in md_pages:
-            page_num = page_data.get("metadata", {}).get("page", 0)
-            text = page_data.get("text", "").strip()
+            page_num = page_data.get("metadata", {}).get("page_number", 0)
+            text = self._sanitize_text(page_data.get("text", ""))
 
-            if len(text) < self._min_text_length:
+            if len(text) < self._min_text_length or self._is_reference_block(text):
                 continue
 
             blocks.append(ParsedBlock(
@@ -158,6 +215,20 @@ class DualTrackMedicalParser:
         return blocks
 
     # ── 工具函数 ──
+    @staticmethod
+    def _sanitize_text(text: str) -> str:
+        """移除 parser 注入的图片占位标记，保留正文与 OCR 文本主体。"""
+        text = _PICTURE_PLACEHOLDER_RE.sub("", text)
+        text = _PICTURE_TEXT_MARKER_RE.sub("", text)
+        text = re.sub(r"[ \t]+\n", "\n", text)
+        text = re.sub(r"\n{3,}", "\n\n", text)
+        return text.strip()
+
+    @staticmethod
+    def _is_reference_block(text: str) -> bool:
+        """参考文献区不应作为临床证据入库。"""
+        return bool(_REFERENCE_HEADING_RE.search(text))
+
     @staticmethod
     def _table_to_markdown(table: list[list[str | None]]) -> str:
         """

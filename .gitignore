@@ -44,3 +44,16 @@ ai_plans/
 阶段性工作总结/
 简历面试指南与项目亮点深度剖析.md
 🩺 项目构思文档.md
+revision/
+revision/
+.local_docs/
+CONTEXT.md
+docs/agents/
+docs/medical_safety_policy.md
+docs/context_sources.md
+docs/test_runs/
+docs/superpowers/
+docs/clinical_expert_review.md
+docs/project_proposal.md
+docs/index_audit_report.json
+docs/index_rebuild_summary.json

@@ -4,6 +4,7 @@ VeriMind-Med API 路由
 
 import time
 import logging
+import re
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 from app.config import get_settings
@@ -19,6 +20,51 @@ from app.services.llm_client import get_llm_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+PRESCRIPTION_ACTION_TERMS = (
+    "开处方",
+    "帮我开处方",
+    "开药",
+    "帮我开药",
+    "处方",
+    "用药方案",
+)
+
+PATIENT_CONTEXT_TERMS = (
+    "这个孩子",
+    "患儿",
+    "宝宝",
+    "婴儿",
+    "儿童",
+    "发热",
+    "咳嗽",
+)
+
+
+def _is_direct_prescription_request(query: str) -> bool:
+    """Block patient-specific prescription generation before RAG."""
+    compact_query = re.sub(r"\s+", "", query)
+    has_prescription_action = any(term in compact_query for term in PRESCRIPTION_ACTION_TERMS)
+    has_patient_context = any(term in compact_query for term in PATIENT_CONTEXT_TERMS)
+    return has_prescription_action and has_patient_context
+
+
+def _blocked_prescription_answer() -> str:
+    return (
+        "已拦截：当前系统不提供个体化处方开具。儿童发热咳嗽需结合年龄、体重、体温、"
+        "查体、病原学、过敏史、肝肾功能等信息，由医生线下评估。"
+        "可改问某指南对儿童发热咳嗽初步评估有哪些建议，或某药物在儿童中的说明书/指南依据。"
+    )
+
+
+def _rejected_trust_score() -> TrustScoreDetail:
+    return TrustScoreDetail(
+        s_ret=0.0,
+        s_faith=0.0,
+        w_authority=0.0,
+        trust_score=0.0,
+        trust_level=TrustLevel.REJECTED,
+    )
 
 
 def _serialize_evidence_chunks(chunks):
@@ -77,6 +123,17 @@ async def audit_query(
 
     try:
         # 同步等待整个图跑完
+        if _is_direct_prescription_request(request.query):
+            return AuditQueryResponse(
+                query=request.query,
+                normalized_query=request.query,
+                intent=IntentType.DETAIL,
+                answer=_blocked_prescription_answer(),
+                trust_score=_rejected_trust_score(),
+                evidence=[],
+                processing_time=round(time.time() - start_time, 3),
+            )
+
         final_state = await audit_engine.ainvoke({"original_query": request.query})
 
         processing_time = time.time() - start_time
@@ -115,6 +172,21 @@ async def audit_query_stream(
             yield f"data: {json.dumps({'type': 'start', 'query': request.query})}\n\n"
 
             # astream_events 能够深度捕获所有图内 LLM 调用的实时 Token
+            if _is_direct_prescription_request(request.query):
+                payload = {
+                    "type": "node_update",
+                    "node": "auditor",
+                    "intent": IntentType.DETAIL.value,
+                    "normalized_query": request.query,
+                    "evidence_count": 0,
+                    "evidence": [],
+                    "answer": _blocked_prescription_answer(),
+                    "trust_score": _rejected_trust_score().dict(),
+                }
+                yield f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+                yield f"data: {json.dumps({'type': 'done'})}\n\n"
+                return
+
             async for event in audit_engine.astream_events({"original_query": request.query}, version="v2"):
                 kind = event["event"]
 

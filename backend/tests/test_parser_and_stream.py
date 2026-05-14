@@ -9,7 +9,7 @@ from app.knowledge import parser as parser_module
 from app.knowledge.indexer import ZhipuEmbeddingFunction
 from app.knowledge.parser import DualTrackMedicalParser
 from app.knowledge.retriever import MultiGranularityRetriever
-from app.models.schemas import IntentType
+from app.models.schemas import IntentType, TrustLevel
 from rebuild_index import _build_index_status
 
 
@@ -118,6 +118,19 @@ def test_resolve_answer_from_state_prefers_draft_answer():
 def test_resolve_answer_from_state_falls_back_to_answer():
     state = {"answer": "旧字段回答"}
     assert routes._resolve_answer_from_state(state) == "旧字段回答"
+
+
+def test_direct_prescription_request_is_blocked():
+    assert routes._is_direct_prescription_request("这个孩子发热咳嗽 3 天，你帮我开处方。")
+    assert routes._is_direct_prescription_request("患儿咳嗽发热，帮我开药。")
+    assert not routes._is_direct_prescription_request("儿童重症肺炎支原体肺炎，是否可以静脉滴注阿奇霉素？")
+
+
+def test_blocked_prescription_uses_rejected_trust_score():
+    score = routes._rejected_trust_score()
+
+    assert score.trust_level == TrustLevel.REJECTED
+    assert score.trust_score == 0.0
 
 
 def test_retriever_filters_reference_and_picture_noise():

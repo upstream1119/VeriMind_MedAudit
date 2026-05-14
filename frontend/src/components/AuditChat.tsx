@@ -98,6 +98,7 @@ export default function AuditChat() {
             isStreaming: true,
             currentNode: 'start',
         });
+        setSelectedMessageId(assistantId);
 
         // 发起 SSE 请求
         auditQueryStream(
@@ -323,13 +324,30 @@ export default function AuditChat() {
                 <Sider width={380} style={{ padding: '16px', borderLeft: '1px solid #e8e8e8', background: '#fff', overflowY: 'auto' }}>
                     <Title level={5} style={{ marginBottom: 16 }}>⚖️ 审计详情面板</Title>
 
-                    {selectedMsg?.trustScore ? (
+                    {selectedMsg?.role === 'assistant' ? (
                         <Space direction="vertical" style={{ width: '100%' }} size="middle">
                             {/* Trust-Score 仪表盘 */}
-                            {renderTrustGauge(selectedMsg.trustScore)}
+                            {selectedMsg.trustScore ? (
+                                renderTrustGauge(selectedMsg.trustScore)
+                            ) : (
+                                <Card size="small" style={{ borderRadius: 8 }}>
+                                    <Space>
+                                        <Spin size="small" />
+                                        <Text>审计进行中，正在更新证据与评分...</Text>
+                                    </Space>
+                                    {selectedMsg.currentNode && (
+                                        <div style={{ marginTop: 8 }}>
+                                            <Tag color="processing">
+                                                {NODE_LABELS[selectedMsg.currentNode] || selectedMsg.currentNode}
+                                            </Tag>
+                                        </div>
+                                    )}
+                                </Card>
+                            )}
 
                             {/* 分项指标 */}
-                            <Descriptions column={1} size="small" bordered>
+                            {selectedMsg.trustScore && (
+                                <Descriptions column={1} size="small" bordered>
                                 <Descriptions.Item label="检索相关性 S_ret">
                                     <Progress
                                         percent={Math.round(selectedMsg.trustScore.s_ret * 10)}
@@ -347,7 +365,8 @@ export default function AuditChat() {
                                 <Descriptions.Item label="权威度 W_authority">
                                     <Text strong>{selectedMsg.trustScore.w_authority.toFixed(2)}</Text>
                                 </Descriptions.Item>
-                            </Descriptions>
+                                </Descriptions>
+                            )}
 
                             {/* 意图 & 标准化查询 */}
                             {selectedMsg.intent && (

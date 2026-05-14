@@ -11,6 +11,7 @@ from langchain_openai import ChatOpenAI
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
+LLM_REQUEST_TIMEOUT_SECONDS = 45
 
 
 class LLMClient:
@@ -32,6 +33,7 @@ class LLMClient:
         self._client = AsyncOpenAI(
             api_key=settings.get_active_api_key(),
             base_url=settings.get_base_url(),
+            timeout=LLM_REQUEST_TIMEOUT_SECONDS,
         )
         self._settings = settings
         logger.info(
@@ -147,6 +149,7 @@ def get_langchain_client(role: str = "generator") -> ChatOpenAI:
         api_key=settings.get_active_api_key(),
         base_url=settings.get_base_url(),
         temperature=settings.LLM_TEMPERATURE,
+        timeout=LLM_REQUEST_TIMEOUT_SECONDS,
         max_retries=2,
     )
 

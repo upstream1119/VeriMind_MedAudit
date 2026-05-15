@@ -16,6 +16,13 @@ from app.agents.nodes.auditor import auditor_node
 
 logger = logging.getLogger(__name__)
 
+
+def route_after_router(state: AuditState) -> str:
+    if state.get("error_message"):
+        return "end"
+    return "retriever"
+
+
 def build_audit_graph():
     """
     构建并编译审计大模型图
@@ -36,8 +43,15 @@ def build_audit_graph():
     # START -> Router 
     workflow.add_edge(START, "router")
     
-    # Router -> Retriever
-    workflow.add_edge("router", "retriever")
+    # Router -> Retriever / END
+    workflow.add_conditional_edges(
+        "router",
+        route_after_router,
+        {
+            "retriever": "retriever",
+            "end": END,
+        },
+    )
     
     # Retriever -> Generator
     # TODO: 之后这里可以加条件边: 如果 retriever 没有查到任何证据, 甚至可以直接短路跳到 END

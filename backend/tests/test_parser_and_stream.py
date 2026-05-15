@@ -3,6 +3,8 @@ from types import SimpleNamespace
 
 from app.agents.nodes import auditor as auditor_module
 from app.agents.nodes.auditor import FaithfulnessScore
+from app.agents.nodes import router as router_module
+from app.agents.graph import route_after_router
 from app.agents.nodes import retriever_node as retriever_node_module
 from app.api import routes
 from app.config import Settings
@@ -271,6 +273,34 @@ def test_faithfulness_score_accepts_reasoning_alias():
     )
 
     assert score.reason == "The answer is supported by the evidence."
+
+
+def test_router_failure_returns_rejected_state(monkeypatch):
+    monkeypatch.setattr(
+        router_module,
+        "generate_structured_output",
+        lambda **_: (_ for _ in ()).throw(ValueError("invalid router payload")),
+    )
+
+    state = {"original_query": "儿童阿奇霉素静滴剂量是否合规？"}
+
+    result = router_module.router_node(state)
+
+    assert result["current_node"] == "router"
+    assert result["intent"] == IntentType.DETAIL
+    assert result["evidence"] == []
+    assert result["trust_score"].trust_level == TrustLevel.REJECTED
+    assert result["draft_answer"]
+    assert "Router 解析失败" in result["error_message"]
+
+
+def test_graph_routes_router_failure_to_end():
+    state = {
+        "original_query": "儿童阿奇霉素静滴剂量是否合规？",
+        "error_message": "Router 解析失败: invalid router payload",
+    }
+
+    assert route_after_router(state) == "end"
 
 
 def test_auditor_demotes_twice_daily_when_evidence_recommends_qd(monkeypatch):

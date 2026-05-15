@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 from app.models.schemas import IntentType
 from app.agents.state import AuditState
 from app.services.llm_client import generate_structured_output
+from app.services.trust_score import compute_trust_score
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,21 @@ ROUTER_SYSTEM_PROMPT = """你是一个专业的儿科临床医学文献检索重
 【系统级严重警告】：返回的 JSON 中，必须并且只能使用 "normalized_query" 和 "intent" 这两个键名！禁止擅自编造如 knowledge_alignment 等其他名字！
 """
 
+
+def _reject_router_failure(state: AuditState, original_query: str, error: str) -> AuditState:
+    state["normalized_query"] = original_query
+    state["intent"] = IntentType.DETAIL
+    state["evidence"] = []
+    state["draft_answer"] = (
+        "已拦截：问题路由解析失败，无法可靠识别医学审计意图。"
+        "请补充更明确的药物、剂量、给药途径，或交由人工复核。"
+    )
+    state["trust_score"] = compute_trust_score(0, 0, 0)
+    state["current_node"] = "router"
+    state["error_message"] = f"Router 解析失败: {error}"
+    return state
+
+
 def router_node(state: AuditState) -> AuditState:
     """
     LangGraph Node: 意图路由与医学术语提取
@@ -56,6 +72,8 @@ def router_node(state: AuditState) -> AuditState:
             output_schema=RouterDecision,
             role="router"
         )
+        if not decision.normalized_query.strip():
+            raise ValueError("Router returned empty normalized_query")
         
         # 更新图状态
         state["normalized_query"] = decision.normalized_query
@@ -66,6 +84,6 @@ def router_node(state: AuditState) -> AuditState:
         
     except Exception as e:
         logger.error(f"[Agent::Router] 结构化解析失败: {e}")
-        state["error_message"] = f"Router 解析失败: {str(e)}"
+        return _reject_router_failure(state, original_query, str(e))
         
     return state

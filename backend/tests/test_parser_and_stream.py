@@ -1,6 +1,7 @@
 from pathlib import Path
 from types import SimpleNamespace
 
+from app.agents.nodes import auditor as auditor_module
 from app.agents.nodes.auditor import FaithfulnessScore
 from app.agents.nodes import retriever_node as retriever_node_module
 from app.api import routes
@@ -270,6 +271,35 @@ def test_faithfulness_score_accepts_reasoning_alias():
     )
 
     assert score.reason == "The answer is supported by the evidence."
+
+
+def test_auditor_demotes_twice_daily_when_evidence_recommends_qd(monkeypatch):
+    monkeypatch.setattr(
+        auditor_module,
+        "generate_structured_output",
+        lambda **_: (_ for _ in ()).throw(
+            AssertionError("frequency conflict should skip Judge LLM")
+        ),
+    )
+
+    state = {
+        "original_query": "儿童支原体肺炎阿奇霉素静滴 10mg/kg，一天两次可以吗？",
+        "normalized_query": "儿童 支原体肺炎 阿奇霉素 静脉滴注 10mg/kg 每日两次",
+        "draft_answer": "指南推荐阿奇霉素静滴 10mg/kg。",
+        "evidence": [
+            SimpleNamespace(
+                content="重症推荐阿奇霉素静点，10mg/(kg.d)，qd，连用7d左右。",
+                relevance_score=0.68,
+                authority_weight=0.9,
+            )
+        ],
+    }
+
+    result = auditor_module.auditor_node(state)
+
+    assert result["trust_score"].trust_level == TrustLevel.REJECTED
+    assert result["trust_score"].s_faith == 2.0
+    assert "频次" in result["draft_answer"]
 
 
 def test_retriever_treats_missing_index_status_as_not_ready(tmp_path):

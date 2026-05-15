@@ -9,12 +9,65 @@ VeriMind-Med 智能体节点: Auditor (幻觉评分与门控裁判)
 """
 
 import logging
+import re
 from pydantic import AliasChoices, BaseModel, Field
 from app.agents.state import AuditState
 from app.services.llm_client import generate_structured_output
 from app.services.trust_score import compute_trust_score
 
 logger = logging.getLogger(__name__)
+
+TWICE_DAILY_PATTERNS = (
+    r"一天\s*2\s*次",
+    r"一天\s*两\s*次",
+    r"每日\s*2\s*次",
+    r"每日\s*两\s*次",
+    r"\bb\.?i\.?d\.?\b",
+    r"\bbid\b",
+)
+
+ONCE_DAILY_PATTERNS = (
+    r"\bq\.?d\.?\b",
+    r"每日\s*1\s*次",
+    r"每日\s*一\s*次",
+    r"一天\s*1\s*次",
+    r"一天\s*一\s*次",
+)
+
+
+def _has_any_pattern(text: str, patterns: tuple[str, ...]) -> bool:
+    return any(re.search(pattern, text, flags=re.IGNORECASE) for pattern in patterns)
+
+
+def _has_frequency_conflict(state: AuditState, evidence_chunks: list) -> bool:
+    query_text = " ".join(
+        str(state.get(key) or "")
+        for key in ("original_query", "normalized_query", "draft_answer")
+    )
+    evidence_text = " ".join(str(getattr(chunk, "content", "")) for chunk in evidence_chunks)
+    return (
+        _has_any_pattern(query_text, TWICE_DAILY_PATTERNS)
+        and _has_any_pattern(evidence_text, ONCE_DAILY_PATTERNS)
+    )
+
+
+def _reject_frequency_conflict(state: AuditState, evidence_chunks: list, draft_answer: str) -> AuditState:
+    top_chunk = evidence_chunks[0]
+    s_ret = top_chunk.relevance_score * 10
+    w_authority = top_chunk.authority_weight
+    state["draft_answer"] = (
+        "已拦截：待审计频次与证据推荐频次不一致。"
+        "当前证据支持每日一次（qd）相关方案，不支持一天两次/bid。"
+        + str(draft_answer)
+    )
+    state["trust_score"] = compute_trust_score(
+        s_ret=s_ret,
+        s_faith=2.0,
+        w_authority=w_authority,
+    )
+    state["current_node"] = "auditor"
+    logger.warning("[Agent::Auditor] 频次冲突，跳过 Judge LLM 并强制降级")
+    return state
 
 class FaithfulnessScore(BaseModel):
     score: float = Field(..., ge=0, le=10, description="对源文档的忠实度打分，0 表示完全无中生有产生幻觉，10 表示严丝合缝")
@@ -56,6 +109,9 @@ def auditor_node(state: AuditState) -> AuditState:
         state["trust_score"] = compute_trust_score(0, 0, 0)
         state["current_node"] = "auditor"
         return state
+
+    if _has_frequency_conflict(state, evidence_chunks):
+        return _reject_frequency_conflict(state, evidence_chunks, str(draft_answer))
         
     # 拼装裁判所看的上下文
     context_str = "\n\n".join([f"片段{i+1}: " + c.content for i, c in enumerate(evidence_chunks)])
@@ -70,7 +126,6 @@ def auditor_node(state: AuditState) -> AuditState:
         )
         
         s_faith = judgment.score
-        
         # 提取相关性 S_ret 和 权威度 w_authority (以召回列表中分数最高的第一条为主)
         top_chunk = evidence_chunks[0]
         s_ret = top_chunk.relevance_score * 10  # Schema 中要求是 [0,10] 的标度 (假设 relevance 已经是 [0,1])
@@ -78,7 +133,6 @@ def auditor_node(state: AuditState) -> AuditState:
         
         # 调用此前写的公式计算最终 Trust-Score
         ts_detail = compute_trust_score(s_ret=s_ret, s_faith=s_faith, w_authority=w_authority)
-        
         state["trust_score"] = ts_detail
         state["current_node"] = "auditor"
         

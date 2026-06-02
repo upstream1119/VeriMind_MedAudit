@@ -332,6 +332,57 @@ def test_auditor_demotes_twice_daily_when_evidence_recommends_qd(monkeypatch):
     assert "频次" in result["draft_answer"]
 
 
+def test_auditor_frequency_conflict_uses_clean_rejection_message(monkeypatch):
+    monkeypatch.setattr(
+        auditor_module,
+        "generate_structured_output",
+        lambda **_: (_ for _ in ()).throw(
+            AssertionError("frequency conflict should skip Judge LLM")
+        ),
+    )
+
+    state = {
+        "original_query": "儿童支原体肺炎阿奇霉素静滴 10mg/kg，一天两次可以吗？",
+        "normalized_query": "儿童 支原体肺炎 阿奇霉素 静脉滴注 10mg/kg 给药频率 一天两次",
+        "draft_answer": '{"normalized_query": "儿童 支原体肺炎 阿奇霉素 静脉滴注", "intent": "DETAIL"}',
+        "evidence": [
+            SimpleNamespace(
+                content="重症推荐阿奇霉素静点，10mg/(kg.d)，qd，连用7d左右。",
+                relevance_score=0.69,
+                authority_weight=0.9,
+            )
+        ],
+    }
+
+    result = auditor_module.auditor_node(state)
+
+    assert result["trust_score"].trust_level == TrustLevel.REJECTED
+    assert "不支持一天两次" in result["draft_answer"]
+    assert "人工复核" in result["draft_answer"]
+    assert "normalized_query" not in result["draft_answer"]
+    assert "intent" not in result["draft_answer"]
+
+
+def test_auditor_missing_draft_answer_returns_safe_rejection_message():
+    state = {
+        "original_query": "儿童支原体肺炎阿奇霉素静滴 10mg/kg，一天两次可以吗？",
+        "normalized_query": "儿童 支原体肺炎 阿奇霉素 静脉滴注 10mg/kg 给药频率 一天两次",
+        "evidence": [
+            SimpleNamespace(
+                content="重症推荐阿奇霉素静点，10mg/(kg.d)，qd，连用7d左右。",
+                relevance_score=0.69,
+                authority_weight=0.9,
+            )
+        ],
+    }
+
+    result = auditor_module.auditor_node(state)
+
+    assert result["trust_score"].trust_level == TrustLevel.REJECTED
+    assert "系统不应强行给出治疗方案" in result["draft_answer"]
+    assert "人工复核" in result["draft_answer"]
+
+
 def test_retriever_treats_missing_index_status_as_not_ready(tmp_path):
     retriever = MultiGranularityRetriever.__new__(MultiGranularityRetriever)
     retriever._persist_dir = str(tmp_path)

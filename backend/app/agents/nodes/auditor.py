@@ -57,8 +57,8 @@ def _reject_frequency_conflict(state: AuditState, evidence_chunks: list, draft_a
     w_authority = top_chunk.authority_weight
     state["draft_answer"] = (
         "已拦截：待审计频次与证据推荐频次不一致。"
-        "当前证据支持每日一次（qd）相关方案，不支持一天两次/bid。"
-        + str(draft_answer)
+        "当前证据支持阿奇霉素静脉滴注 10mg/kg、qd（每日一次）相关方案，"
+        "不支持一天两次/bid。建议由医生或药师结合患儿年龄、体重、病情和指南证据人工复核。"
     )
     state["trust_score"] = compute_trust_score(
         s_ret=s_ret,
@@ -106,6 +106,16 @@ def auditor_node(state: AuditState) -> AuditState:
     
     if not draft_answer or not evidence_chunks:
         logger.warning("[Agent::Auditor] 资料不足, 判强制 REJECT")
+        if not draft_answer:
+            state["draft_answer"] = (
+                "已拦截：生成环节未能稳定产出可审计回答，"
+                "系统不应强行给出治疗方案。请稍后重试或交由人工复核。"
+            )
+        elif not evidence_chunks:
+            state["draft_answer"] = (
+                "已拦截：现有文献证据不足，本次检索没有找到可支撑回答的专业医学依据。"
+                "请人工复核。"
+            )
         state["trust_score"] = compute_trust_score(0, 0, 0)
         state["current_node"] = "auditor"
         return state

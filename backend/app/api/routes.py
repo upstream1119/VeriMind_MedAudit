@@ -190,11 +190,10 @@ async def audit_query_stream(
             async for event in audit_engine.astream_events({"original_query": request.query}, version="v2"):
                 kind = event["event"]
 
-                # 1. 捕获大模型逐字生成的 Token
+                # 1. 不透传底层 LLM token，避免 Router/Judge 的结构化 JSON 泄漏到聊天气泡。
+                # 前端通过 node_update.answer 展示 Generator/Auditor 的最终审计结论。
                 if kind == "on_chat_model_stream":
-                    content = event["data"]["chunk"].content
-                    if content:
-                        yield f"data: {json.dumps({'type': 'token', 'content': content}, ensure_ascii=False)}\n\n"
+                    continue
 
                 # 2. 捕获每个大节点跑完后的状态更新
                 elif kind == "on_chain_end":

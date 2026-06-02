@@ -12,6 +12,8 @@ from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 LLM_REQUEST_TIMEOUT_SECONDS = 45
+LLM_MAX_RETRIES = 0
+LLM_MAX_TOKENS = 300
 
 
 class LLMClient:
@@ -72,6 +74,7 @@ class LLMClient:
                 model=model,
                 messages=messages,
                 temperature=temp,
+                max_tokens=LLM_MAX_TOKENS,
             )
             content = response.choices[0].message.content or ""
             logger.debug(f"LLM [{model_role}:{model}] 生成完成, 长度: {len(content)}")
@@ -108,6 +111,7 @@ class LLMClient:
                 messages=messages,
                 temperature=temp,
                 stream=True,
+                max_tokens=LLM_MAX_TOKENS,
             )
             async for chunk in stream:
                 if chunk.choices and chunk.choices[0].delta.content:
@@ -150,7 +154,8 @@ def get_langchain_client(role: str = "generator") -> ChatOpenAI:
         base_url=settings.get_base_url(),
         temperature=settings.LLM_TEMPERATURE,
         timeout=LLM_REQUEST_TIMEOUT_SECONDS,
-        max_retries=2,
+        max_retries=LLM_MAX_RETRIES,
+        max_tokens=LLM_MAX_TOKENS,
     )
 
 def generate_structured_output(

@@ -28,7 +28,7 @@ import {
 import { useAppStore } from '../stores/useAppStore';
 import type { ChatMessage } from '../stores/useAppStore';
 import { checkHealth, auditQueryStream } from '../services/api';
-import type { NodeUpdateEvent, TrustScoreDetail } from '../services/api';
+import type { NodeUpdateEvent, RetrievedChunk, TrustScoreDetail } from '../services/api';
 
 const { Header, Content, Sider } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -48,7 +48,7 @@ export default function AuditChat() {
     const [backendStatus, setBackendStatus] = useState<string>('checking...');
     const [activeNode, setActiveNode] = useState<string | null>(null);
     const [hasEntered, setHasEntered] = useState(false);
-    const [viewingEvidence, setViewingEvidence] = useState<any | null>(null); // 新增：控制溯源查看器弹窗
+    const [viewingEvidence, setViewingEvidence] = useState<RetrievedChunk | null>(null); // 新增：控制溯源查看器弹窗
     const chatBottomRef = useRef<HTMLDivElement>(null);
 
     const {
@@ -115,7 +115,12 @@ export default function AuditChat() {
                     return;
                 }
                 if (event.type === 'token' && event.content) {
-                    updateLastAssistant({ appendContent: event.content } as any);
+                    const latestAssistant = [...useAppStore.getState().messages]
+                        .reverse()
+                        .find((msg) => msg.role === 'assistant');
+                    updateLastAssistant({
+                        content: `${latestAssistant?.content || ''}${event.content}`,
+                    });
                     return;
                 }
 
@@ -176,15 +181,15 @@ export default function AuditChat() {
         const color = ts.trust_level === 'TRUSTED' ? '#52c41a'
             : ts.trust_level === 'WARNING' ? '#faad14' : '#ff4d4f';
         return (
-            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+            <div className="audit-trust-gauge">
                 <Progress
                     type="dashboard"
                     percent={percent}
                     strokeColor={color}
                     format={() => (
                         <div>
-                            <div style={{ fontSize: 24, fontWeight: 700 }}>{ts.trust_score.toFixed(2)}</div>
-                            <div style={{ fontSize: 12, color: '#999' }}>/ 10.0</div>
+                            <div className="audit-trust-score">{ts.trust_score.toFixed(2)}</div>
+                            <div className="audit-trust-scale">/ 10.0</div>
                         </div>
                     )}
                 />
@@ -226,23 +231,27 @@ export default function AuditChat() {
         const currentNode = activeNode || msg?.currentNode;
         const currentIndex = WORKFLOW_NODES.indexOf(currentNode || '');
         return (
-            <Card size="small" title="审计链路" style={{ borderRadius: 10 }}>
-                <Space size={6} wrap>
+            <Card size="small" title="审计链路" className="audit-workflow-card">
+                <div className="audit-workflow" aria-label="审计链路状态">
                     {WORKFLOW_NODES.map((node, index) => {
                         const isActive = node === currentNode;
                         const isDone = currentIndex >= 0 && index < currentIndex;
                         return (
-                            <Tag
+                            <div
                                 key={node}
-                                color={isActive ? 'processing' : isDone ? 'success' : 'default'}
-                                style={{ marginInlineEnd: 0 }}
+                                className={[
+                                    'audit-workflow-node',
+                                    isActive ? 'is-active' : '',
+                                    isDone ? 'is-done' : '',
+                                ].filter(Boolean).join(' ')}
                             >
-                                {NODE_LABELS[node]}
-                            </Tag>
+                                <span className="audit-workflow-index">{String(index + 1).padStart(2, '0')}</span>
+                                <span className="audit-workflow-label">{NODE_LABELS[node]}</span>
+                            </div>
                         );
                     })}
-                </Space>
-                <Paragraph type="secondary" style={{ fontSize: 12, margin: '8px 0 0' }}>
+                </div>
+                <Paragraph type="secondary" className="audit-workflow-copy">
                     流程说明：先检索证据，再生成谨慎回答，最后由 TrustScore Gate 判断通过、提醒或拦截。
                 </Paragraph>
             </Card>
@@ -251,79 +260,70 @@ export default function AuditChat() {
 
     if (!hasEntered) {
         return (
-            <Layout
-                style={{
-                    minHeight: '100vh',
-                    background:
-                        'radial-gradient(circle at 18% 18%, rgba(79,195,247,0.20), transparent 28%), linear-gradient(135deg, #071426 0%, #10294a 48%, #f5f7fa 48%, #eef4fb 100%)',
-                    padding: 32,
-                }}
-            >
-                <div
-                    style={{
-                        minHeight: 'calc(100vh - 64px)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
-                >
+            <Layout className="audit-entry-shell">
+                <div className="audit-entry-wrap">
                     <Card
-                        style={{
-                            width: 720,
-                            borderRadius: 24,
-                            boxShadow: '0 24px 80px rgba(7, 20, 38, 0.18)',
-                            overflow: 'hidden',
-                        }}
+                        className="audit-entry-card"
                         styles={{ body: { padding: 0 } }}
                     >
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-                            <div
-                                style={{
-                                    padding: 32,
-                                    background: 'linear-gradient(160deg, #0a1628, #173a63)',
-                                    color: 'white',
-                                    minHeight: 360,
-                                }}
-                            >
-                                <SafetyCertificateOutlined style={{ color: '#7dd3fc', fontSize: 34 }} />
-                                <Title level={2} style={{ color: 'white', margin: '18px 0 8px' }}>
+                        <div className="audit-entry-grid">
+                            <div className="audit-entry-brand">
+                                <div className="audit-entry-mark">
+                                    <SafetyCertificateOutlined />
+                                </div>
+                                <Text className="audit-entry-kicker">Evidence-first medical AI audit</Text>
+                                <Title level={2} className="audit-entry-title">
                                     VeriMind-MedAudit
                                 </Title>
-                                <Paragraph style={{ color: 'rgba(255,255,255,0.78)', fontSize: 15 }}>
-                                    面向儿科用药场景的证据链审计与风险提醒系统
+                                <Paragraph className="audit-entry-copy">
+                                    面向儿科用药场景的证据链审计与风险门控系统，为医疗大模型回答增加可追溯、可解释、可拦截的安全层。
                                 </Paragraph>
-                                <Space direction="vertical" size={10} style={{ marginTop: 28 }}>
-                                    <Tag color="blue">检索 - 推理 - 审计</Tag>
-                                    <Tag color="cyan">证据来源与页码溯源</Tag>
-                                    <Tag color="gold">证据不足优先人工复核</Tag>
-                                </Space>
+                                <div className="audit-entry-metrics">
+                                    <div>
+                                        <strong>4步</strong>
+                                        <span>审计链路</span>
+                                    </div>
+                                    <div>
+                                        <strong>3项</strong>
+                                        <span>可信评分</span>
+                                    </div>
+                                    <div>
+                                        <strong>页码级</strong>
+                                        <span>证据溯源</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div style={{ padding: 32, background: '#fff' }}>
-                                <Title level={4} style={{ marginBottom: 8 }}>
-                                    审计工作站登录
+                            <div className="audit-entry-panel">
+                                <Title level={4} className="audit-entry-panel-title">
+                                    进入审计工作站
                                 </Title>
-                                <Paragraph type="secondary" style={{ marginBottom: 24 }}>
-                                    比赛演示模式，无需真实账号。进入后可进行儿科用药问题审计。
+                                <Paragraph type="secondary" className="audit-entry-panel-copy">
+                                    比赛演示模式，无需真实账号。进入后可对儿科用药相关回答进行证据检索、可信评分和安全边界判断。
                                 </Paragraph>
                                 <Alert
                                     type="warning"
                                     showIcon
                                     message="医疗安全声明"
                                     description="本系统仅用于科研、教学和比赛展示，不提供真实诊断或处方建议。"
-                                    style={{ borderRadius: 12, marginBottom: 24 }}
+                                    className="audit-entry-alert"
                                 />
+                                <div className="audit-entry-capabilities">
+                                    <Tag color="blue">检索 - 推理 - 审计</Tag>
+                                    <Tag color="cyan">证据来源与页码溯源</Tag>
+                                    <Tag color="gold">证据不足优先人工复核</Tag>
+                                </div>
                                 <Button
                                     type="primary"
                                     size="large"
                                     icon={<LoginOutlined />}
                                     block
                                     onClick={() => setHasEntered(true)}
-                                    style={{ height: 48, borderRadius: 12 }}
+                                    className="audit-entry-button"
                                 >
                                     进入审计工作站
                                 </Button>
-                                <Paragraph type="secondary" style={{ fontSize: 12, margin: '16px 0 0' }}>
-                                    默认角色：比赛评审 / 教学演示用户
+                                <Paragraph type="secondary" className="audit-entry-footnote">
+                                    默认角色：比赛评审 / 教学演示用户。所有输出仅用于演示和辅助审核。
                                 </Paragraph>
                             </div>
                         </div>
@@ -334,36 +334,28 @@ export default function AuditChat() {
     }
 
     return (
-        <Layout style={{ height: '100vh' }}>
-            <Header
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    background: 'linear-gradient(135deg, #0a1628 0%, #162a4a 100%)',
-                    padding: '0 24px',
-                    borderBottom: '1px solid #1a3a5c',
-                    height: 72,
-                    lineHeight: 'normal',
-                }}
-            >
-                <Space align="center">
-                    <SafetyCertificateOutlined style={{ color: '#4fc3f7', fontSize: 24 }} />
+        <Layout className="audit-shell">
+            <Header className="audit-header">
+                <Space align="center" className="audit-brand">
+                    <div className="audit-brand-icon">
+                        <SafetyCertificateOutlined />
+                    </div>
                     <div>
-                        <Title level={4} style={{ color: 'white', margin: 0 }}>
+                        <Title level={4} className="audit-brand-title">
                             VeriMind-MedAudit 审计工作站
                         </Title>
-                        <Text style={{ color: 'rgba(255,255,255,0.72)', fontSize: 12 }}>
+                        <Text className="audit-brand-subtitle">
                             面向儿科用药场景的证据链审计与风险提醒系统
                         </Text>
                     </div>
                 </Space>
-                <Space>
+                <Space className="audit-header-actions">
                     {activeNode && (
                         <Tag icon={<ThunderboltOutlined />} color="processing">
                             {NODE_LABELS[activeNode] || activeNode}
                         </Tag>
                     )}
+                    <span className="audit-status-pill">安全边界启用</span>
                     <Tag color={backendStatus.includes('已连接') ? 'success' : 'error'}>
                         {backendStatus}
                     </Tag>
@@ -371,32 +363,33 @@ export default function AuditChat() {
                         type="text"
                         icon={<DeleteOutlined />}
                         onClick={clearMessages}
-                        style={{ color: '#aaa' }}
+                        className="audit-clear-button"
+                        aria-label="清空对话"
                         title="清空对话"
                     />
                 </Space>
             </Header>
 
-            <Layout>
+            <Layout className="audit-workbench">
                 {/* 对话区 */}
-                <Content style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', background: '#f5f7fa' }}>
+                <Content className="audit-content">
                     <Alert
                         showIcon
                         type="info"
                         message="医疗安全边界"
                         description="本系统仅用于科研、教学和比赛展示；不提供真实诊断或处方建议。所有医学结论必须追溯到证据，证据不足时应拒答或提示人工复核。"
-                        style={{ marginBottom: 12, borderRadius: 12 }}
+                        className="audit-safety-alert"
                     />
                     <Card
-                        style={{ flex: 1, overflowY: 'auto', marginBottom: 12, borderRadius: 12 }}
+                        className="audit-chat-card"
                         styles={{ body: { padding: '12px 20px' } }}
                     >
                         {messages.length === 0 ? (
-                            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div className="audit-empty-state">
                                 <Empty
                                     description={
                                         <Space direction="vertical" size={4}>
-                                            <Text strong>选择一个演示题，或输入儿科用药审核问题</Text>
+                                            <Text strong>输入一个儿科用药审核问题，启动证据审计链路</Text>
                                             <Text type="secondary">系统会展示证据来源、页码、TrustScore 和安全边界判断。</Text>
                                         </Space>
                                     }
@@ -408,38 +401,33 @@ export default function AuditChat() {
                                 dataSource={messages}
                                 renderItem={(msg) => (
                                     <List.Item
-                                        style={{ borderBottom: 'none', padding: '8px 0', cursor: msg.role === 'assistant' ? 'pointer' : 'default' }}
+                                        className="audit-message-list-item"
+                                        style={{ cursor: msg.role === 'assistant' ? 'pointer' : 'default' }}
                                         onClick={() => msg.role === 'assistant' && setSelectedMessageId(msg.id)}
                                     >
                                         <div
-                                            style={{
-                                                width: '100%',
-                                                display: 'flex',
-                                                flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
-                                            }}
+                                            className={[
+                                                'audit-message-row',
+                                                msg.role === 'user' ? 'is-user' : 'is-assistant',
+                                            ].join(' ')}
                                         >
                                             <div
-                                                style={{
-                                                    maxWidth: '80%',
-                                                    background: msg.role === 'user'
-                                                        ? 'linear-gradient(135deg, #1890ff, #096dd9)'
-                                                        : msg.id === selectedMessageId ? '#e6f4ff' : '#fff',
-                                                    color: msg.role === 'user' ? 'white' : '#333',
-                                                    padding: '12px 16px',
-                                                    borderRadius: 12,
-                                                    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-                                                    border: msg.id === selectedMessageId ? '2px solid #1890ff' : '1px solid #f0f0f0',
-                                                }}
+                                                className={[
+                                                    'audit-message-card',
+                                                    msg.role === 'user' ? 'is-user' : 'is-assistant',
+                                                    msg.id === selectedMessageId ? 'is-selected' : '',
+                                                    msg.isStreaming ? 'is-streaming' : '',
+                                                ].filter(Boolean).join(' ')}
                                             >
                                                 <Space direction="vertical" style={{ width: '100%' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        <Text strong style={{ color: msg.role === 'user' ? 'white' : 'inherit', fontSize: 13 }}>
+                                                    <div className="audit-message-meta">
+                                                        <Text strong className="audit-message-author">
                                                             {msg.role === 'user' ? '👨‍⚕️ 提问者' : '🤖 审计系统'}
                                                         </Text>
                                                         {renderTrustBadge(msg.trustLevel)}
                                                     </div>
-                                                    <Paragraph style={{ margin: 0, color: 'inherit', whiteSpace: 'pre-wrap', fontSize: 14 }}>
-                                                        {msg.content || (msg.isStreaming ? `正在审计中：${NODE_LABELS[msg.currentNode || ''] || '启动审计链路'}...` : '')}
+                                                    <Paragraph className="audit-message-content">
+                                                        {msg.content || (msg.isStreaming ? `正在审计中：${NODE_LABELS[msg.currentNode || ''] || '启动审计链路'}…` : '')}
                                                         {msg.isStreaming && <Spin size="small" style={{ marginLeft: 8 }} />}
                                                     </Paragraph>
                                                     {msg.role === 'assistant' && msg.intent && !msg.isStreaming && (
@@ -460,7 +448,7 @@ export default function AuditChat() {
                         <div ref={chatBottomRef} />
                     </Card>
 
-                    <div style={{ display: 'flex', gap: 8 }}>
+                    <div className="audit-input-bar">
                         <Input.TextArea
                             value={inputText}
                             onChange={(e) => setInputText(e.target.value)}
@@ -470,16 +458,17 @@ export default function AuditChat() {
                                     handleSend();
                                 }
                             }}
-                            placeholder="输入用药审核问题... (Enter 发送, Shift+Enter 换行)"
+                            aria-label="输入儿科用药审核问题"
+                            placeholder="输入用药审核问题… Enter 发送，Shift+Enter 换行"
                             autoSize={{ minRows: 2, maxRows: 4 }}
-                            style={{ borderRadius: 10 }}
+                            className="audit-query-input"
                         />
                         <Button
                             type="primary"
                             icon={<SendOutlined />}
                             onClick={handleSend}
                             loading={isLoading}
-                            style={{ height: 'auto', borderRadius: 10, minWidth: 100 }}
+                            className="audit-send-button"
                         >
                             审计
                         </Button>
@@ -487,11 +476,13 @@ export default function AuditChat() {
                 </Content>
 
                 {/* 右侧：Trust-Score 与证据面板 */}
-                <Sider width={380} style={{ padding: '16px', borderLeft: '1px solid #e8e8e8', background: '#fff', overflowY: 'auto' }}>
-                    <Title level={5} style={{ marginBottom: 4 }}>⚖️ 审计详情面板</Title>
-                    <Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 16 }}>
-                        展示模型回答是否有证据、是否忠实于证据，以及是否触发医疗安全边界。
-                    </Paragraph>
+                <Sider width={400} className="audit-side-panel">
+                    <div className="audit-side-heading">
+                        <Title level={5}>⚖️ 审计详情面板</Title>
+                        <Paragraph type="secondary">
+                            展示模型回答是否有证据、是否忠实于证据，以及是否触发医疗安全边界。
+                        </Paragraph>
+                    </div>
 
                     {selectedMsg?.role === 'assistant' ? (
                         <Space direction="vertical" style={{ width: '100%' }} size="middle">
@@ -500,8 +491,8 @@ export default function AuditChat() {
                             <Card
                                 size="small"
                                 title="审计结论"
+                                className="audit-decision-card"
                                 style={{
-                                    borderRadius: 10,
                                     borderLeft: `4px solid ${getDecisionCopy(selectedMsg).color}`,
                                 }}
                             >
@@ -573,9 +564,9 @@ export default function AuditChat() {
 
                             {/* 证据统计与片段 */}
                             {selectedMsg.evidence && selectedMsg.evidence.length > 0 ? (
-                                <Card size="small" title={`📑 可追溯证据链 (${selectedMsg.evidenceCount || selectedMsg.evidence.length})`} style={{ borderRadius: 8 }}>
+                                <Card size="small" title={`📑 可追溯证据链 (${selectedMsg.evidenceCount || selectedMsg.evidence.length})`} className="audit-evidence-card">
                                     {selectedMsg.evidence.map((ev, idx) => (
-                                        <div key={idx} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: idx < selectedMsg.evidence!.length - 1 ? '1px dashed #e8e8e8' : 'none' }}>
+                                        <div key={idx} className="audit-evidence-item">
                                             <Space direction="vertical" size={4} style={{ width: '100%' }}>
                                                 <Space wrap>
                                                     <Tag color="purple">依据 {idx + 1}</Tag>
@@ -588,8 +579,9 @@ export default function AuditChat() {
                                                 <Button
                                                     type="link"
                                                     size="small"
-                                                    style={{ padding: 0, fontSize: 12 }}
+                                                    className="audit-evidence-link"
                                                     onClick={() => setViewingEvidence(ev)}
+                                                    aria-label={`查看依据 ${idx + 1} 的完整原文`}
                                                 >
                                                     🔍 查看完整原文
                                                 </Button>
@@ -598,13 +590,13 @@ export default function AuditChat() {
                                     ))}
                                 </Card>
                             ) : selectedMsg.evidenceCount !== undefined && (
-                                <Card size="small" title="📑 检索证据" style={{ borderRadius: 8 }}>
+                                <Card size="small" title="📑 检索证据" className="audit-evidence-card">
                                     <Text>共检索到 <Text strong>{selectedMsg.evidenceCount}</Text> 条相关证据片段</Text>
                                 </Card>
                             )}
                         </Space>
                     ) : (
-                        <div style={{ padding: '60px 0', textAlign: 'center' }}>
+                        <div className="audit-side-empty">
                             <Empty description="点击左侧对话气泡查看审计详情" />
                         </div>
                     )}
@@ -631,7 +623,7 @@ export default function AuditChat() {
             >
                 {viewingEvidence && (
                     <div>
-                        <Card size="small" style={{ marginBottom: 16, background: '#fafafa' }}>
+                        <Card size="small" className="audit-source-card">
                             <Descriptions column={2} size="small">
                                 <Descriptions.Item label="文献出处" span={2}>
                                     <Text strong>{viewingEvidence.source}</Text>
@@ -647,14 +639,7 @@ export default function AuditChat() {
                             </Descriptions>
                         </Card>
                         <Title level={5}>原文节选内容：</Title>
-                        <div style={{
-                            background: '#f5f5f5',
-                            padding: '16px',
-                            borderRadius: '8px',
-                            maxHeight: '400px',
-                            overflowY: 'auto',
-                            border: '1px solid #e8e8e8'
-                        }}>
+                        <div className="audit-source-content">
                             <Paragraph style={{ whiteSpace: 'pre-wrap', fontSize: 15, lineHeight: 1.8 }}>
                                 {viewingEvidence.content}
                             </Paragraph>

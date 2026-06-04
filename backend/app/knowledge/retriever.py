@@ -41,6 +41,18 @@ _PICTURE_TEXT_MARKER_RE = re.compile(
     r"\*\*-----\s*(Start|End)\s+of picture text\s*-----\*\*",
     re.IGNORECASE,
 )
+_TITLE_NORMALIZE_RE = re.compile(r"[\s#　，。、《》（）()：:;；·.\-]+")
+_TITLE_ONLY_TERMS = (
+    "儿童社区获得性肺炎诊疗规范2019年版",
+    "儿童肺炎支原体肺炎诊疗指南2023年版",
+    "中国儿科超药品说明书用药专家共识",
+    "国家基本药物目录2018年版",
+)
+_MEDICAL_SIGNAL_TERMS = (
+    "治疗", "评估", "推荐", "剂量", "疗程", "用药", "抗生素",
+    "症状", "检查", "预防", "接种", "免疫", "住院", "重症",
+    "病原体", "疗效", "给药", "静脉", "口服", "qd", "bid", "mg",
+)
 
 # 文件名关键词 → 权威等级
 _AUTHORITY_KEYWORD_MAP = {
@@ -206,6 +218,7 @@ class MultiGranularityRetriever:
 
         all_results.sort(key=lambda c: c.final_score, reverse=True)
         all_results = self._apply_required_term_filter(query, all_results)
+        all_results = self._deduplicate_results(all_results)
 
         logger.info(f"[Retriever] 检索完成, 共返回 {len(all_results)} 条结果")
         return all_results
@@ -288,7 +301,7 @@ class MultiGranularityRetriever:
 
     @staticmethod
     def _is_noise_chunk(content: str) -> bool:
-        """过滤明显不应作为临床证据展示的参考文献与解析占位噪声。"""
+        """过滤明显不应作为临床证据展示的参考文献、标题与解析占位噪声。"""
         if not content:
             return True
         if _REFERENCE_HEADING_RE.search(content):
@@ -297,7 +310,40 @@ class MultiGranularityRetriever:
             return True
         if _PICTURE_TEXT_MARKER_RE.search(content):
             return True
+        if MultiGranularityRetriever._looks_like_title_only_chunk(content):
+            return True
         return False
+
+    @staticmethod
+    def _looks_like_title_only_chunk(content: str) -> bool:
+        lines = [line.strip().strip("#").strip() for line in content.splitlines() if line.strip()]
+        if not lines:
+            return True
+
+        compact = _TITLE_NORMALIZE_RE.sub("", "".join(lines))
+        if not compact:
+            return True
+
+        has_signal = any(term in content for term in _MEDICAL_SIGNAL_TERMS)
+        title_hit = any(term in compact for term in _TITLE_ONLY_TERMS)
+        if title_hit and len(lines) <= 2 and not has_signal:
+            return True
+        if compact.startswith("附录") and title_hit and len(compact) <= 40:
+            return True
+        return len(compact) < 28 and not has_signal
+
+    @staticmethod
+    def _deduplicate_results(chunks: list[RetrievedChunk]) -> list[RetrievedChunk]:
+        deduped = []
+        seen = set()
+        for chunk in chunks:
+            signature = re.sub(r"\s+", "", chunk.content or "")[:120]
+            key = (chunk.source_file, chunk.page_number, signature)
+            if key in seen:
+                continue
+            seen.add(key)
+            deduped.append(chunk)
+        return deduped
 
     @staticmethod
     def _apply_required_term_filter(query: str, chunks: list[RetrievedChunk]) -> list[RetrievedChunk]:

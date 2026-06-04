@@ -11,7 +11,7 @@ from app.config import Settings
 from app.knowledge import parser as parser_module
 from app.knowledge.indexer import ZhipuEmbeddingFunction
 from app.knowledge.parser import DualTrackMedicalParser
-from app.knowledge.retriever import MultiGranularityRetriever
+from app.knowledge.retriever import MultiGranularityRetriever, RetrievedChunk
 from app.models.schemas import IntentType, TrustLevel
 from rebuild_index import _build_index_status
 
@@ -161,6 +161,56 @@ def test_retriever_filters_reference_and_picture_noise():
     assert len(chunks) == 1
     assert chunks[0].page_number == 4
     assert "CAP：年龄3个月以上" in chunks[0].content
+
+
+def test_retriever_filters_title_only_guideline_chunks():
+    retriever = MultiGranularityRetriever.__new__(MultiGranularityRetriever)
+    retriever._settings = SimpleNamespace(
+        AUTHORITY_WEIGHTS={"clinical_guideline": 0.9, "default": 0.5}
+    )
+
+    response = {
+        "documents": [[
+            "儿童社区获得性肺炎诊疗规范（2019 年版）",
+            "## 附录 儿童社区获得性肺炎诊疗规范（2019 年版）",
+            "1.初次评估。重症患者初始治疗后1～2小时应作病情和疗效评估。",
+        ]],
+        "metadatas": [[
+            {"source_file": "儿童社区获得性肺炎诊疗规范（2019年版）.pdf", "page_number": 27, "block_type": "text"},
+            {"source_file": "儿童社区获得性肺炎诊疗规范（2019年版）.pdf", "page_number": 27, "block_type": "text"},
+            {"source_file": "儿童社区获得性肺炎诊疗规范（2019年版）.pdf", "page_number": 26, "block_type": "text"},
+        ]],
+        "distances": [[0.1, 0.2, 0.3]],
+    }
+
+    chunks = retriever._parse_chroma_response(response, 512)
+
+    assert len(chunks) == 1
+    assert "初次评估" in chunks[0].content
+
+
+def test_retriever_deduplicates_multi_granularity_results():
+    chunks = [
+        RetrievedChunk(
+            "初次评估。重症患者初始治疗后1～2小时应作病情和疗效评估。",
+            128, 0.1, 0.9, 0.9, 0.81,
+            "儿童社区获得性肺炎诊疗规范（2019年版）.pdf", 26, "", "text",
+        ),
+        RetrievedChunk(
+            "初次评估。重症患者初始治疗后1～2小时应作病情和疗效评估。",
+            512, 0.2, 0.8, 0.9, 0.72,
+            "儿童社区获得性肺炎诊疗规范（2019年版）.pdf", 26, "", "text",
+        ),
+        RetrievedChunk(
+            "再次评估。48～72小时症状无改善时再次评估。",
+            512, 0.3, 0.7, 0.9, 0.63,
+            "儿童社区获得性肺炎诊疗规范（2019年版）.pdf", 26, "", "text",
+        ),
+    ]
+
+    deduped = MultiGranularityRetriever._deduplicate_results(chunks)
+
+    assert deduped == [chunks[0], chunks[2]]
 
 
 def test_retriever_maps_new_guideline_sources_to_authority_weights():

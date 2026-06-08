@@ -1,148 +1,190 @@
 # VeriMind-MedAudit
 
-面向儿科用药场景的多智能体证据审计系统，结合医学指南检索、Trust-Score 门控、来源溯源和人工复核提示，辅助识别潜在用药风险。
+**面向儿科用药科普的可信问答与证据审计系统**  
+*A pediatric-medication evidence auditing prototype for safer medical AI responses.*
 
-> 本系统不替代医生诊断或临床决策，仅用于医学知识核验、用药风险提示、教学演示和竞赛原型展示。
+> 本项目不提供临床诊断、处方建议或个体化治疗决策。它面向医学知识核验、用药风险提示、教学演示、竞赛展示和科研原型验证。
 
-## 1. 项目简介
+## 1. Project Positioning
 
-儿科用药属于低容错场景。剂量、年龄禁忌、适应症、给药方式和指南来源一旦出错，普通“总是回答”的大模型交互方式就会带来明显风险。
+普通医学问答系统关注的是：**如何回答问题**。  
+VeriMind-MedAudit 更关注的是：**这个回答是否应该被相信**。
 
-VeriMind-MedAudit 的目标不是生成更长的医学回答，而是让系统在证据不足、来源不匹配或知识库不完整时，能够触发保守输出、拒答或人工复核。项目采用“检索-推理-审计”多智能体协同架构，对药品剂量、禁忌症、适应症和证据来源进行自动核验。
+在儿科用药这种低容错场景中，剂量、年龄限制、禁忌症、适应症、给药方式和指南来源一旦出错，风险会被大模型“自信回答”的表达方式放大。因此，本项目不把目标定义为“让 AI 替代医生回答用药问题”，而是把目标定义为：
 
-## 2. Evidence-grounded Workflow
+- 判断回答是否有明确医学证据支撑；
+- 判断回答是否忠实于检索到的指南、共识或目录来源；
+- 判断回答是否越过医疗安全边界；
+- 在证据不足、来源不匹配或知识库异常时，触发拒答、风险提示或人工复核。
 
-系统核心链路如下：
+简单说，MedAudit 的核心不是 **medical QA generation**，而是 **medical answer auditing**。
 
-1. Router 标准化医学问题并识别意图。
-2. Retriever 从多粒度医学知识库召回证据片段。
-3. Generator 严格基于证据片段生成候选回答。
-4. Auditor 评估检索相关性、回答忠实度和来源权威度。
-5. Trust-Score 将回答分流为可回答、需人工复核或证据不足。
+## 2. Core Safety Principle: Fail-closed
 
-核心信任评分：
+医疗场景里，“检索不到但继续编一个答案”是不可接受的。
 
-```text
-T = alpha * S_ret + beta * S_faith
-TrustScore = T * W_authority
-```
+VeriMind-MedAudit 采用 **fail-closed** 策略：
 
-其中：
+- 知识库未就绪时，不允许伪装成有依据；
+- 检索不到可靠证据时，不输出确定性医学结论；
+- 来源权威性不足、页码错配或证据污染时，触发风险提示；
+- 回答与证据不一致时，进入人工复核或拒答路径。
 
-- `S_ret`：检索证据与问题的相关性。
-- `S_faith`：回答是否忠实于证据片段。
-- `W_authority`：证据来源的权威度权重。
+> 宁可拒答，也不输出弱证据下的确定性结论。
 
-## 3. 当前能力
+## 3. Evidence-grounded Workflow
 
-- 多粒度医学知识库：128 / 512 / 1024 三层 ChromaDB 索引。
-- 双轨 PDF 解析：`pymupdf4llm` 提取正文，`pdfplumber` 提取表格。
-- 扫描件识别：入库前抽样检测 PDF 是否可抽文本，避免扫描件静默污染索引。
-- 多 Agent 审计链：Router -> Retriever -> Generator -> Auditor。
-- Trust-Score 门控：综合检索相关性、回答忠实度和来源权威度。
-- 前端工作站：React + Ant Design，支持 SSE 节点流、证据面板和 Trust-Score 展示。
-
-## 4. 当前知识库
-
-正式知识库位于 `data/guidelines/`，当前可用来源为：
-
-| 文件 | 用途 | 状态 |
-| --- | --- | --- |
-| `中国儿科超药品说明书用药专家共识.pdf` | 儿科超说明书用药依据 | 可抽文本 |
-| `儿童肺炎支原体肺炎诊疗指南（2023年版）.pdf` | MPP / 重症 MPP / 阿奇霉素治疗依据 | 可抽文本 |
-| `儿童社区获得性肺炎诊疗规范（2019年版）.pdf` | CAP、支原体肺炎、抗感染治疗依据 | 可抽文本 |
-| `国家基本药物目录（2018年版）.pdf` | 官方基本药物身份 / 剂型目录依据 | 可抽文本 |
-
-旧扫描件已移入 `data/guidelines/_archive_scanned/`，不参与正式索引。
-
-索引完整性状态写入：
-
-```powershell
-backend\data\chroma_db\index_status.json
-```
-
-当前验收状态：`ready=true`。
-
-## 5. 技术架构
+系统采用“检索 → 生成 → 审计 → 门控”的闭环。Router、Retriever、Generator、Auditor 不是为了强调概念包装，而是为了把医学问答中的关键责任拆开，让每一步都可以被检查和回放。
 
 ```text
 User Query
     |
     v
 Router
+- normalize query
+- identify medication / disease / dosage / safety intent
     |
     v
 Retriever
+- retrieve guideline / consensus / catalog evidence
+- return source, page and chunk metadata
     |
     v
 Generator
+- draft an answer only from retrieved evidence
     |
     v
 Auditor
+- check retrieval relevance
+- check answer faithfulness
+- check source authority
+- check medical safety boundary
     |
     v
-Trust-Score Gate
-    |
-    +--> Answer
-    +--> Review Required
-    +--> Evidence Insufficient
+Trust Gate
+    +--> trusted answer with evidence
+    +--> risk warning / human review
+    +--> evidence-insufficient refusal
 ```
 
-主要技术栈：
+## 4. What the Auditor Checks
 
-- 后端：FastAPI、LangGraph、Pydantic
-- 检索：ChromaDB、多粒度向量索引
-- 文档解析：PyMuPDF / `pymupdf4llm`、`pdfplumber`
-- 前端：React、TypeScript、Vite、Ant Design
-- 交互：SSE 节点流、证据面板、Trust-Score 展示
+| Audit dimension | Main question | Possible decision |
+| --- | --- | --- |
+| Evidence support | Is there reliable evidence for this answer? | answer / review / refuse |
+| Faithfulness | Does the answer stay within the evidence? | pass / revise / reject |
+| Source authority | Is the source a guideline, expert consensus, or official catalog? | weighted trust score |
+| Medical safety boundary | Does the answer imply diagnosis, prescription, or personalized treatment? | warning / refusal |
+| Knowledge integrity | Is the index ready and free from obvious parsing or scanning failure? | allow retrieval / fail-closed |
 
-## 6. 运行与验证
+Core trust scoring:
 
-后端测试：
+```text
+T = alpha * S_ret + beta * S_faith
+TrustScore = T * W_authority
+```
+
+Where:
+
+- `S_ret`: relevance between the user query and retrieved medical evidence;
+- `S_faith`: faithfulness between the generated answer and retrieved evidence;
+- `W_authority`: authority weight of the evidence source.
+
+## 5. Current Capabilities
+
+- **Multi-granularity medical indexing**: 128 / 512 / 1024 chunk ChromaDB indexes.
+- **PDF governance before indexing**: checks whether documents are machine-readable before they enter the formal index.
+- **Dual-track PDF parsing**: `pymupdf4llm` for text extraction and `pdfplumber` for tables.
+- **Evidence metadata tracing**: source file, page, chunk and retrieval score are preserved for answer review.
+- **Trust-Score gating**: combines retrieval relevance, answer faithfulness and source authority.
+- **SSE workflow visualization**: frontend displays node-level streaming, evidence panels and audit results.
+- **Regression scripts**: manual regression and index audit scripts are available for repeatable checks.
+
+## 6. Current Knowledge Base
+
+Formal evidence sources are stored in `data/guidelines/`.
+
+| File | Purpose | Status |
+| --- | --- | --- |
+| `中国儿科超药品说明书用药专家共识.pdf` | Pediatric off-label medication evidence | text-readable |
+| `儿童肺炎支原体肺炎诊疗指南（2023年版）.pdf` | MPP / severe MPP / azithromycin-related evidence | text-readable |
+| `儿童社区获得性肺炎诊疗规范（2019年版）.pdf` | CAP, mycoplasma pneumonia and anti-infective treatment evidence | text-readable |
+| `国家基本药物目录（2018年版）.pdf` | Official essential medicine identity and dosage-form catalog | text-readable |
+
+Scanned or unreliable files are moved to:
+
+```text
+data/guidelines/_archive_scanned/
+```
+
+Index integrity is recorded in:
+
+```text
+backend/data/chroma_db/index_status.json
+```
+
+The retriever should only operate normally when the index status is ready. Otherwise, downstream modules should receive empty or insufficient evidence and trigger the fail-closed path.
+
+## 7. Tech Stack
+
+| Layer | Tools |
+| --- | --- |
+| Backend | FastAPI, LangGraph, Pydantic |
+| Retrieval | ChromaDB, multi-granularity vector indexes |
+| Document processing | PyMuPDF, `pymupdf4llm`, `pdfplumber` |
+| Frontend | React, TypeScript, Vite, Ant Design |
+| Interaction | SSE node streaming, evidence panel, Trust-Score display |
+| Testing / audit | pytest, manual regression, index audit scripts |
+
+## 8. Running and Validation
+
+Backend tests:
 
 ```powershell
 $env:DEBUG='true'
 $env:PYTHONPATH='backend'
-D:\anaconda\envs\verimind_MedAudit_env\python.exe -m pytest backend/tests -q
+python -m pytest backend/tests -q
 ```
 
-重建知识库：
+Rebuild knowledge index:
 
 ```powershell
 $env:DEBUG='true'
 $env:PYTHONPATH='backend'
-D:\anaconda\envs\verimind_MedAudit_env\python.exe backend\rebuild_index.py
+python backend/rebuild_index.py
 ```
 
-审计索引：
+Audit index status:
 
 ```powershell
 $env:DEBUG='true'
 $env:PYTHONPATH='backend'
-D:\anaconda\envs\verimind_MedAudit_env\python.exe backend\audit_index.py
+python backend/audit_index.py
 ```
 
-运行人工回归：
+Run manual regression:
 
 ```powershell
 $env:DEBUG='true'
 $env:PYTHONPATH='backend'
-D:\anaconda\envs\verimind_MedAudit_env\python.exe backend\run_manual_regression.py
+python backend/run_manual_regression.py
 ```
 
-## 7. 后续评测计划
+## 9. Evaluation Roadmap
 
-项目下一步会从可演示原型升级为更完整的 evidence-grounded workflow：
+The next stage is to move from a working prototype to a more complete evidence-auditing research workflow:
 
-- Trap-QA 测试集：覆盖剂量、禁忌症、证据不足、指南冲突等高风险问题。
-- Claim-evidence alignment：将回答中的关键 claim 对齐到具体指南片段、页码和来源。
-- Structured audit logs：记录每次请求的意图、证据、回答、分数和最终决策。
-- Replayable audit traces：支持回放 Router、Retriever、Generator、Auditor 的链路决策。
-- Failure taxonomy：区分 retrieval miss、evidence pollution、unsupported claim、over-refusal、under-refusal、page mismatch 等失败类型。
+- **Trap-QA test set**: pediatric medication questions covering dosage, contraindication, evidence insufficiency, guideline conflicts and unsafe prompts.
+- **Claim-evidence alignment**: decompose generated answers into claims and align each claim to guideline snippets, page numbers and sources.
+- **Audit label taxonomy**: classify generated claims into supported, unsupported, contradicted and insufficient-evidence cases.
+- **Structured audit logs**: record query intent, retrieved evidence, generated answer, audit score and final gate decision.
+- **Replayable audit traces**: replay Router, Retriever, Generator, Auditor and Trust Gate decisions.
+- **Failure taxonomy**: distinguish retrieval miss, evidence pollution, unsupported claim, over-refusal, under-refusal and page mismatch.
 
-## 8. 使用边界
+## 10. Project Boundary
 
-- 本项目不提供临床诊断。
-- 本项目不替代医生、药师或医疗机构的专业判断。
-- 所有医学输出都应被视为辅助核验信息。
-- 证据不足、来源不匹配或知识库不完整时，系统应优先提示人工复核。
+- This project is not a clinical decision system.
+- It does not replace doctors, pharmacists or medical institutions.
+- It should not be used to make real treatment or prescription decisions.
+- All medical outputs should be treated as auxiliary evidence-checking information.
+- When evidence is insufficient, mismatched or unavailable, the system should prefer refusal or human review over confident generation.

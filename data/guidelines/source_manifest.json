@@ -1,0 +1,286 @@
+{
+  "schema_version": "1.0",
+  "updated_at": "2026-06-09",
+  "formal_directory": "data/guidelines",
+  "staging_directory": "data/guidelines/_staging",
+  "admission_policy": {
+    "automatic_promotion": false,
+    "required_before_approval": [
+      "official_source_verified",
+      "sha256_recorded",
+      "parseability_inspected",
+      "page_and_content_spot_check_completed"
+    ],
+    "status_flow": [
+      "registered",
+      "downloaded",
+      "inspected",
+      "approved",
+      "indexed"
+    ],
+    "rejection_statuses": [
+      "download_failed",
+      "inspection_failed",
+      "rejected_scan_heavy"
+    ]
+  },
+  "sources": [
+    {
+      "source_id": "SRC-005",
+      "title": "抗菌药物临床应用指导原则（2015年版）",
+      "year": 2015,
+      "publisher": "国家卫生计生委办公厅",
+      "jurisdiction": "CN",
+      "source_type": "national_guideline",
+      "authority_level": "national",
+      "official_page_url": "https://www.nhc.gov.cn/yzygj/c100068/201508/9f7136d6fb034339a7c9348c72a8a1fd.shtml",
+      "download_url": "https://www.nhc.gov.cn/yzygj/c100068/201508/9f7136d6fb034339a7c9348c72a8a1fd/files/1732864152643_67691.pdf",
+      "filename": "抗菌药物临床应用指导原则（2015年版）.pdf",
+      "status": "inspected",
+      "included_in_kb": false,
+      "evidence_types": [
+        "antimicrobial_stewardship",
+        "indication",
+        "combination_therapy",
+        "route",
+        "course"
+      ],
+      "can_support": [
+        "抗菌药物使用原则",
+        "联合用药合理性审计",
+        "疗程与给药途径原则"
+      ],
+      "cannot_support": [
+        "缺乏患者信息时的个体化处方",
+        "超出文件范围的新药方案"
+      ],
+      "downloaded_at": "2026-06-09T06:25:32.031643+00:00",
+      "resolved_download_url": "https://www.nhc.gov.cn/yzygj/c100068/201508/9f7136d6fb034339a7c9348c72a8a1fd/files/1732864152643_67691.pdf",
+      "file_size": 813902,
+      "sha256": "3c95e66d2df5dd05ac26c754d7afbf43c94ce983794b55dab6ee1b389b235220",
+      "inspection": {
+        "page_count": 91,
+        "sampled_pages": 30,
+        "text_pages": 30,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "content_check": {
+        "status": "title_verified",
+        "checked_at": "2026-06-09",
+        "note": "首页标题、发布文号与2015版抗菌药物临床应用指导原则一致。"
+      }
+    },
+    {
+      "source_id": "SRC-006",
+      "title": "流行性感冒诊疗方案（2025年版）",
+      "year": 2025,
+      "publisher": "国家卫生健康委员会",
+      "jurisdiction": "CN",
+      "source_type": "national_guideline",
+      "authority_level": "national",
+      "official_page_url": "https://www.nhc.gov.cn/ylyjs/zcwj/202501/f8fcecca59a048bebc4a71847ce57594.shtml",
+      "download_url": "https://wsjk.ln.gov.cn/wsjk/zfxxgk/zc/gjjwj/2025012320510759292/2025012320500390775.pdf",
+      "filename": "流行性感冒诊疗方案（2025年版）.pdf",
+      "status": "inspected",
+      "included_in_kb": false,
+      "evidence_types": [
+        "diagnosis",
+        "antiviral_therapy",
+        "pediatric_dosing",
+        "risk_stratification"
+      ],
+      "can_support": [
+        "儿童流感诊疗框架",
+        "抗病毒药物适应证与剂量依据",
+        "重症和高风险人群识别"
+      ],
+      "cannot_support": [
+        "无检查和病史条件下直接开处方",
+        "非流感疾病的治疗结论"
+      ],
+      "download_mirror_note": "国家卫健委原附件链接已失效；使用辽宁省卫生健康委员会官方转载附件。",
+      "downloaded_at": "2026-06-09T06:37:02.444912+00:00",
+      "resolved_download_url": "https://wsjk.ln.gov.cn/wsjk/zfxxgk/zc/gjjwj/2025012320510759292/2025012320500390775.pdf",
+      "file_size": 362851,
+      "sha256": "d19f8cba72af08fd11fe17c0d6c3614c9aaac8d8c77fa803e7e9b999abea1125",
+      "inspection": {
+        "page_count": 18,
+        "sampled_pages": 18,
+        "text_pages": 18,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "content_check": {
+        "status": "title_verified",
+        "checked_at": "2026-06-09",
+        "note": "首页标题为流行性感冒诊疗方案（2025年版），正文可抽取。"
+      }
+    },
+    {
+      "source_id": "SRC-007",
+      "title": "手足口病诊疗指南（2018年版）",
+      "year": 2018,
+      "publisher": "国家卫生健康委员会办公厅",
+      "jurisdiction": "CN",
+      "source_type": "national_guideline",
+      "authority_level": "national",
+      "official_page_url": "https://www.nhc.gov.cn/yzygj/c100068/201805/576560c090704885ad1e96e3f772b0f3.shtml",
+      "download_url": null,
+      "filename": "手足口病诊疗指南（2018年版）.pdf",
+      "status": "registered",
+      "included_in_kb": false,
+      "evidence_types": [
+        "diagnosis",
+        "severity",
+        "supportive_care",
+        "referral"
+      ],
+      "can_support": [
+        "手足口病诊疗与分级原则",
+        "重症识别与转诊边界",
+        "支持和对症治疗原则"
+      ],
+      "cannot_support": [
+        "未经指南支持的特异抗病毒方案",
+        "缺少患者信息时的个体化处方"
+      ],
+      "registration_note": "官方通知页已核验。中国政府网原始附件为 DOC；海淀区政府存在20页 PDF 镜像，但文本抽取乱码，暂不进入 staging。"
+    },
+    {
+      "source_id": "SRC-008",
+      "title": "The WHO AWaRe antibiotic book",
+      "year": 2022,
+      "publisher": "World Health Organization",
+      "jurisdiction": "GLOBAL",
+      "source_type": "international_guideline",
+      "authority_level": "international",
+      "official_page_url": "https://www.who.int/publications/i/item/9789240062382",
+      "download_url": "https://iris.who.int/server/api/core/bitstreams/61517f8b-3a34-413c-ae36-67a059ebe485/content",
+      "filename": "WHO_AWaRe_antibiotic_book_2022.pdf",
+      "status": "inspected",
+      "included_in_kb": false,
+      "evidence_types": [
+        "antimicrobial_stewardship",
+        "indication",
+        "pediatric_dosing",
+        "route",
+        "course"
+      ],
+      "can_support": [
+        "常见感染的抗菌药物选择框架",
+        "儿童剂量、给药途径和疗程参考",
+        "AWaRe 分类与抗菌药物管理"
+      ],
+      "cannot_support": [
+        "替代中国本地指南的最终临床决策",
+        "资料未覆盖病种的确定性方案"
+      ],
+      "downloaded_at": "2026-06-09T06:25:58.758475+00:00",
+      "resolved_download_url": "https://iris.who.int/server/api/core/bitstreams/61517f8b-3a34-413c-ae36-67a059ebe485/content",
+      "file_size": 10323301,
+      "sha256": "4960ecc4fa5bab8281feda656a0da3176dafa1fd21971d87e3b2092d7dac562f",
+      "inspection": {
+        "page_count": 697,
+        "sampled_pages": 30,
+        "text_pages": 29,
+        "image_pages": 3,
+        "scan_heavy": false
+      },
+      "content_check": {
+        "status": "title_verified",
+        "checked_at": "2026-06-09",
+        "note": "首页标题与 WHO AWaRe antibiotic book 一致；少量排版字符重复，正式准入前需继续抽查章节和表格。"
+      }
+    },
+    {
+      "source_id": "SRC-009",
+      "title": "WHO Model List of Essential Medicines for Children, 10th list",
+      "year": 2025,
+      "publisher": "World Health Organization",
+      "jurisdiction": "GLOBAL",
+      "source_type": "essential_medicines_list",
+      "authority_level": "international",
+      "official_page_url": "https://www.who.int/publications/i/item/B09475",
+      "download_url": "https://iris.who.int/server/api/core/bitstreams/337edac2-d0aa-4e19-9d72-3acb11d09808/content",
+      "filename": "WHO_Model_List_Essential_Medicines_Children_2025.pdf",
+      "status": "inspected",
+      "included_in_kb": false,
+      "evidence_types": [
+        "medicine_identity",
+        "dosage_form",
+        "essential_medicine_status"
+      ],
+      "can_support": [
+        "儿童基本药物身份",
+        "剂型与规格目录信息"
+      ],
+      "cannot_support": [
+        "单独作为疾病诊疗或剂量处方依据",
+        "个体化用药建议"
+      ],
+      "registration_note": "首次误用 B09474 成人第24版目录，内容抽样发现标题不符后更正为 B09475 儿童第10版。",
+      "downloaded_at": "2026-06-09T06:55:23.319247+00:00",
+      "resolved_download_url": "https://iris.who.int/server/api/core/bitstreams/337edac2-d0aa-4e19-9d72-3acb11d09808/content",
+      "file_size": 844948,
+      "sha256": "53e7b6ab5d50ca5d8c57ed0814a024eb018430a0c09d925e6decd06cd6fa4432",
+      "inspection": {
+        "page_count": 52,
+        "sampled_pages": 30,
+        "text_pages": 30,
+        "image_pages": 1,
+        "scan_heavy": false
+      },
+      "content_check": {
+        "status": "title_verified",
+        "checked_at": "2026-06-09",
+        "note": "首页明确为 WHO Model List of Essential Medicines for Children, 10th list。"
+      }
+    },
+    {
+      "source_id": "SRC-010",
+      "title": "Pocket book of primary health care for children and adolescents",
+      "year": 2022,
+      "publisher": "WHO Regional Office for Europe",
+      "jurisdiction": "GLOBAL",
+      "source_type": "clinical_handbook",
+      "authority_level": "international",
+      "official_page_url": "https://www.who.int/europe/publications/i/item/9789289057622",
+      "download_url": "https://iris.who.int/server/api/core/bitstreams/a484e069-51b4-4f27-933f-18d025350299/content",
+      "filename": "WHO_Primary_Health_Care_Children_Adolescents_2022.pdf",
+      "status": "inspected",
+      "included_in_kb": false,
+      "evidence_types": [
+        "primary_care",
+        "assessment",
+        "referral",
+        "medication_safety"
+      ],
+      "can_support": [
+        "儿童基层诊疗评估框架",
+        "危险征象与转诊边界",
+        "常见疾病的一般管理原则"
+      ],
+      "cannot_support": [
+        "替代中国本地指南的个体化处方",
+        "复杂住院患儿的专科治疗方案"
+      ],
+      "downloaded_at": "2026-06-09T06:26:18.555179+00:00",
+      "resolved_download_url": "https://iris.who.int/server/api/core/bitstreams/a484e069-51b4-4f27-933f-18d025350299/content",
+      "file_size": 9184945,
+      "sha256": "0322ee069d2eb96d6d7772850c8365a04b32e8c4320b70e359cc3b57fc861f82",
+      "inspection": {
+        "page_count": 940,
+        "sampled_pages": 30,
+        "text_pages": 29,
+        "image_pages": 4,
+        "scan_heavy": false
+      },
+      "content_check": {
+        "status": "title_verified",
+        "checked_at": "2026-06-09",
+        "note": "首页标题与 WHO 儿童青少年基层卫生保健手册一致；正式准入前需抽查儿科用药章节。"
+      }
+    }
+  ]
+}

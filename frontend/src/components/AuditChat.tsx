@@ -23,7 +23,6 @@ import {
     StopOutlined,
     DeleteOutlined,
     ThunderboltOutlined,
-    LoginOutlined,
 } from '@ant-design/icons';
 import { useAppStore } from '../stores/useAppStore';
 import type { ChatMessage } from '../stores/useAppStore';
@@ -47,7 +46,6 @@ export default function AuditChat() {
     const [inputText, setInputText] = useState('');
     const [backendStatus, setBackendStatus] = useState<string>('checking...');
     const [activeNode, setActiveNode] = useState<string | null>(null);
-    const [hasEntered, setHasEntered] = useState(false);
     const [viewingEvidence, setViewingEvidence] = useState<RetrievedChunk | null>(null); // 新增：控制溯源查看器弹窗
     const chatBottomRef = useRef<HTMLDivElement>(null);
 
@@ -210,7 +208,7 @@ export default function AuditChat() {
             return {
                 color: '#237804',
                 title: '结论：有证据支持',
-                detail: '当前回答与检索证据一致，可作为教学或审核演示中的参考结果。',
+                detail: '当前回答与检索证据一致，可作为证据审计实验中的参考结果。',
             };
         }
         if (msg.trustScore.trust_level === 'WARNING') {
@@ -258,81 +256,6 @@ export default function AuditChat() {
         );
     };
 
-    if (!hasEntered) {
-        return (
-            <Layout className="audit-entry-shell">
-                <div className="audit-entry-wrap">
-                    <Card
-                        className="audit-entry-card"
-                        styles={{ body: { padding: 0 } }}
-                    >
-                        <div className="audit-entry-grid">
-                            <div className="audit-entry-brand">
-                                <div className="audit-entry-mark">
-                                    <SafetyCertificateOutlined />
-                                </div>
-                                <Text className="audit-entry-kicker">Evidence-first medical AI audit</Text>
-                                <Title level={2} className="audit-entry-title">
-                                    VeriMind-MedAudit
-                                </Title>
-                                <Paragraph className="audit-entry-copy">
-                                    面向儿科用药场景的证据链审计与风险门控系统，为医疗大模型回答增加可追溯、可解释、可拦截的安全层。
-                                </Paragraph>
-                                <div className="audit-entry-metrics">
-                                    <div>
-                                        <strong>4步</strong>
-                                        <span>审计链路</span>
-                                    </div>
-                                    <div>
-                                        <strong>3项</strong>
-                                        <span>可信评分</span>
-                                    </div>
-                                    <div>
-                                        <strong>页码级</strong>
-                                        <span>证据溯源</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="audit-entry-panel">
-                                <Title level={4} className="audit-entry-panel-title">
-                                    进入审计工作站
-                                </Title>
-                                <Paragraph type="secondary" className="audit-entry-panel-copy">
-                                    比赛演示模式，无需真实账号。进入后可对儿科用药相关回答进行证据检索、可信评分和安全边界判断。
-                                </Paragraph>
-                                <Alert
-                                    type="warning"
-                                    showIcon
-                                    message="医疗安全声明"
-                                    description="本系统仅用于科研、教学和比赛展示，不提供真实诊断或处方建议。"
-                                    className="audit-entry-alert"
-                                />
-                                <div className="audit-entry-capabilities">
-                                    <Tag color="blue">检索 - 推理 - 审计</Tag>
-                                    <Tag color="cyan">证据来源与页码溯源</Tag>
-                                    <Tag color="gold">证据不足优先人工复核</Tag>
-                                </div>
-                                <Button
-                                    type="primary"
-                                    size="large"
-                                    icon={<LoginOutlined />}
-                                    block
-                                    onClick={() => setHasEntered(true)}
-                                    className="audit-entry-button"
-                                >
-                                    进入审计工作站
-                                </Button>
-                                <Paragraph type="secondary" className="audit-entry-footnote">
-                                    默认角色：比赛评审 / 教学演示用户。所有输出仅用于演示和辅助审核。
-                                </Paragraph>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            </Layout>
-        );
-    }
-
     return (
         <Layout className="audit-shell">
             <Header className="audit-header">
@@ -342,10 +265,10 @@ export default function AuditChat() {
                     </div>
                     <div>
                         <Title level={4} className="audit-brand-title">
-                            VeriMind-MedAudit 审计工作站
+                            Medaudit-RAG 证据审计工作站
                         </Title>
                         <Text className="audit-brand-subtitle">
-                            面向儿科用药场景的证据链审计与风险提醒系统
+                            面向儿科用药问答的指南约束证据审计研究原型
                         </Text>
                     </div>
                 </Space>
@@ -377,7 +300,7 @@ export default function AuditChat() {
                         showIcon
                         type="info"
                         message="医疗安全边界"
-                        description="本系统仅用于科研、教学和比赛展示；不提供真实诊断或处方建议。所有医学结论必须追溯到证据，证据不足时应拒答或提示人工复核。"
+                        description="本系统仅用于科研与证据审计实验；不提供真实诊断或处方建议。所有医学结论必须追溯到证据，证据不足时应拒答或提示人工复核。"
                         className="audit-safety-alert"
                     />
                     <Card

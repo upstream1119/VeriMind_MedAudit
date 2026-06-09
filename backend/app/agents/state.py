@@ -1,5 +1,5 @@
 """
-VeriMind-Med 智能体状态 (Graph State)
+Medaudit-RAG 智能体状态 (Graph State)
 =====================================
 这是 LangGraph 在各个节点之间传递的唯一数据结构 (State)
 包含了用户请求的原始数据以及中间链路的分析结果

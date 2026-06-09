@@ -1,4 +1,4 @@
-# ── Python ──
+# Python
 __pycache__/
 *.py[cod]
 *.egg-info/
@@ -15,40 +15,40 @@ htmlcov/
 coverage/
 *.log
 
-# ── Environment / secrets ──
+# Environment / secrets
 .env
 .venv/
 venv/
 env/
 
-# ── IDE / local agent configs ──
+# IDE / local agent configs
 .vscode/
 .idea/
 .gemini/
 *.swp
 *.swo
 
-# ── Data / generated indexes ──
+# Data / generated indexes
 data/chroma_db/
 backend/data/chroma_db/
 data/chroma_db_test/
-*.pdf
 data/guidelines/**/*.pdf
+*.pdf
 
-# ── System files ──
+# System files
 .DS_Store
 Thumbs.db
 
-# ── Node / frontend ──
+# Node / frontend
 node_modules/
 frontend/dist/
 frontend/.vite/
 
-# ── Local generated artifacts / competition materials ──
+# Local generated artifacts
 outputs/
 soft_copyright/
 
-# ── Personal / AI collaboration notes (local only) ──
+# Personal / AI collaboration notes (local only)
 AGENTS.md
 AI_CONTEXT.md
 CONTEXT.md
@@ -61,7 +61,7 @@ revision/
 简历面试指南与项目亮点深度剖析.md
 🩺 项目构思文档.md
 
-# ── Local-only docs and reports ──
+# Local-only docs and generated reports
 docs/agents/
 docs/medical_safety_policy.md
 docs/context_sources.md
@@ -72,5 +72,5 @@ docs/project_proposal.md
 docs/index_audit_report.json
 docs/index_rebuild_summary.json
 
-# ── Local helper scripts with machine-specific paths ──
+# Local helper scripts with machine-specific paths
 start-dev.ps1

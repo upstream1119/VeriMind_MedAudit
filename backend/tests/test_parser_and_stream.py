@@ -407,7 +407,7 @@ def test_auditor_frequency_conflict_uses_clean_rejection_message(monkeypatch):
     result = auditor_module.auditor_node(state)
 
     assert result["trust_score"].trust_level == TrustLevel.REJECTED
-    assert "不支持一天两次" in result["draft_answer"]
+    assert "存在冲突" in result["draft_answer"]
     assert "人工复核" in result["draft_answer"]
     assert "normalized_query" not in result["draft_answer"]
     assert "intent" not in result["draft_answer"]

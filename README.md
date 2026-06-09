@@ -1,82 +1,82 @@
-# MedAudit-RAG: Rule-Aware Evidence Auditing for Low-Hallucination Pediatric Medication QA
+# Medaudit-RAG
 
-**基于规则感知证据审计的儿科用药低幻觉问答系统**
+Medaudit-RAG 是一个面向儿科用药问答的指南约束证据审计研究原型。项目关注的不是让大模型给出更像医生的答案，而是评估医学回答是否能够追溯到公开权威资料、是否忠实于证据，以及在证据不足或触及处方边界时是否应拒答或提示人工复核。
 
-> 本项目不提供临床诊断、处方建议或个体化治疗决策。项目面向医学知识核验、用药风险提示、教学演示、竞赛展示和科研原型验证。
+> 本项目仅用于科研实验、方法验证和医学证据审计研究，不构成真实临床诊断、处方或治疗建议。任何医学结论都必须回到已读取的指南、共识、目录或说明书证据；证据不足时应保守处理。
 
-## 1. 项目定位
+## 1. 研究动机
 
-普通医学问答系统关注的是：**如何回答问题**。  
-MedAudit-RAG 更关注的是：**这个回答是否应该被相信**。
+儿科用药问答属于高风险、低容错场景。剂量、频次、给药途径、年龄/体重边界、超说明书用药和药物联用等信息一旦被模型编造或错误外推，就可能形成 unsafe suggestion。普通 RAG 能缓解幻觉，但仍可能出现检索片段不相关、证据重复、回答与证据不一致、证据不足却强行回答等问题。
 
-在儿科用药这种低容错场景中，剂量、年龄限制、禁忌症、适应症、给药方式和指南来源一旦出错，风险会被大模型“自信回答”的表达方式放大。因此，本项目不把目标定义为“让 AI 替代医生回答用药问题”，而是把目标定义为：
+Medaudit-RAG 的研究目标是构建一条 evidence-grounded auditing workflow，将医学问答拆解为“问题路由 -> 证据检索 -> 受约束生成 -> 证据审计 -> TrustScore 门控”，并为后续 Graph-Enhanced Evidence Auditing 论文实验提供可复现的代码基线。
 
-- 判断回答是否有明确医学证据支撑；
-- 判断回答是否忠实于检索到的指南、共识或目录来源；
-- 判断回答是否越过医疗安全边界；
-- 在证据不足、来源不匹配或知识库异常时，触发拒答、风险提示或人工复核。
+## 2. 当前系统能力
 
-简单说，MedAudit 的核心不是 **医学问答生成**，而是 **医学回答审计**。
+当前仓库实现的是多智能体证据审计原型，主要能力包括：
 
-## 2. 核心安全策略：Fail-closed
+- Router：标准化儿科用药问题，识别 `DETAIL`、`CONCEPT`、`CONTEXT` 三类意图。
+- Retriever：基于 128 / 512 / 1024 三粒度向量索引召回证据片段。
+- Generator：要求候选回答严格基于检索证据，不允许脱离证据生成确定性医学结论。
+- Auditor：计算检索相关性、证据忠实度和来源权威度，输出 TrustScore 与门控结论。
+- Frontend：展示问答结果、审计状态、TrustScore 分解、证据来源与页码。
+- Source admission：通过 `source_manifest.json` 和准入脚本记录资料来源、状态和可解析性，避免未审核资料污染正式知识库。
 
-医疗场景里，“检索不到但继续编一个答案”是不可接受的。
+当前实现仍是 vector RAG + TrustScore baseline，尚未声称完成 GraphRAG 或专家验证。Graph-enhanced evidence auditing 是后续研究方向。
 
-MedAudit-RAG 采用 **fail-closed** 策略：
+## 3. 知识库与资料准入
 
-- 知识库未就绪时，不允许伪装成有依据；
-- 检索不到可靠证据时，不输出确定性医学结论；
-- 来源权威性不足、页码错配或证据污染时，触发风险提示；
-- 回答与证据不一致时，进入人工复核或拒答路径。
+正式资料位于 `data/guidelines/`，PDF 原文不进入 Git 版本控制。当前已使用或计划准入的资料必须经过以下检查：
 
-> 宁可拒答，也不输出弱证据下的确定性结论。
+1. 来源是否为公开权威资料。
+2. PDF 是否可抽取文本，是否存在扫描件/OCR 高风险。
+3. 是否记录 `title`、`source_type`、`year`、`publisher`、`url`、`status`、`notes` 等元信息。
+4. 是否适合进入正式索引，或仅作为 staging/候选资料。
 
-## 3. 证据驱动工作流
-
-系统采用“检索 → 生成 → 审计 → 门控”的闭环。Router、Retriever、Generator、Auditor 不是为了强调概念包装，而是为了把医学问答中的关键责任拆开，让每一步都可以被检查和回放。
+正式索引目录为：
 
 ```text
-用户问题
-    |
-    v
-Router 路由器
-- 规范化医学问题
-- 识别药品、疾病、剂量、安全边界等意图
-    |
-    v
-Retriever 检索器
-- 从指南、专家共识、官方目录中召回证据
-- 返回来源、页码、片段和检索分数
-    |
-    v
-Generator 生成器
-- 仅基于检索证据生成候选回答
-    |
-    v
-Auditor 审计器
-- 检查检索相关性
-- 检查回答忠实度
-- 检查来源权威度
-- 检查医疗安全边界
-    |
-    v
-Trust Gate 信任门控
-    +--> 带证据的可信回答
-    +--> 风险提示 / 人工复核
-    +--> 证据不足拒答
+backend/data/chroma_db/
 ```
 
-## 4. 审计器检查什么
+索引完整性状态写入：
 
-| 审计维度 | 核心问题 | 可能决策 |
-| --- | --- | --- |
-| 证据支撑 | 回答是否有可靠医学证据支持？ | 回答 / 复核 / 拒答 |
-| 回答忠实度 | 回答是否严格停留在证据范围内？ | 通过 / 修正 / 拒绝 |
-| 来源权威度 | 来源是否为指南、专家共识或官方目录？ | 加权信任评分 |
-| 医疗安全边界 | 回答是否暗示诊断、处方或个体化治疗？ | 风险提示 / 拒答 |
-| 知识库完整性 | 索引是否就绪，是否存在扫描件污染或解析失败？ | 允许检索 / fail-closed |
+```text
+backend/data/chroma_db/index_status.json
+```
 
-核心信任评分：
+资料准入清单：
+
+```text
+data/guidelines/source_manifest.json
+```
+
+## 4. 系统架构
+
+```text
+User Query
+    |
+    v
+Router
+    |
+    v
+Retriever
+    |
+    v
+Generator
+    |
+    v
+Auditor
+    |
+    v
+TrustScore Gate
+    |
+    +--> answer_supported
+    +--> review_required
+    +--> insufficient_evidence
+    +--> boundary_refusal
+```
+
+TrustScore 的基本形式为：
 
 ```text
 T = alpha * S_ret + beta * S_faith
@@ -85,57 +85,38 @@ TrustScore = T * W_authority
 
 其中：
 
-- `S_ret`：用户问题与检索证据之间的相关性；
-- `S_faith`：生成回答对检索证据的忠实程度；
-- `W_authority`：证据来源的权威度权重。
+- `S_ret`：检索证据与问题的相关性。
+- `S_faith`：回答是否忠实于证据片段。
+- `W_authority`：资料来源权威度权重。
 
-## 5. 当前能力
+## 5. 研究评测方向
 
-- **多粒度医学索引**：支持 128 / 512 / 1024 三层 ChromaDB 向量索引。
-- **入库前 PDF 治理**：正式建库前检测文档是否可抽取文本，避免扫描件静默污染索引。
-- **双轨 PDF 解析**：使用 `pymupdf4llm` 提取正文，使用 `pdfplumber` 提取表格。
-- **证据元数据追踪**：保留来源文件、页码、文本片段和检索分数，方便后续核验。
-- **Trust-Score 门控**：综合检索相关性、回答忠实度和来源权威度。
-- **SSE 流式可视化**：前端展示节点流、证据面板和审计结果。
-- **回归与审计脚本**：提供人工回归、索引审计和测试脚本，支持重复验证。
+后续论文实验将围绕 guideline-grounded pediatric medication safety QA benchmark 展开。该 benchmark 不宣称是真实临床数据集，而是基于公开指南、共识、说明书和目录构建的证据约束评测集。
 
-## 6. 当前知识库
+每道样本应至少包含：
 
-正式证据来源存放于 `data/guidelines/`。
+- `sample_id`
+- `question`
+- `risk_labels`
+- `gold_source`
+- `gold_page`
+- `gold_span`
+- `expected_decision`
+- `allowed_answer_scope`
+- `forbidden_claims`
 
-| 文件 | 用途 | 状态 |
-| --- | --- | --- |
-| `中国儿科超药品说明书用药专家共识.pdf` | 儿科超说明书用药依据 | 可抽文本 |
-| `儿童肺炎支原体肺炎诊疗指南（2023年版）.pdf` | 肺炎支原体肺炎、重症肺炎支原体肺炎、阿奇霉素相关依据 | 可抽文本 |
-| `儿童社区获得性肺炎诊疗规范（2019年版）.pdf` | 儿童社区获得性肺炎、支原体肺炎、抗感染治疗依据 | 可抽文本 |
-| `国家基本药物目录（2018年版）.pdf` | 国家基本药物身份、剂型目录依据 | 可抽文本 |
+核心指标包括：
 
-扫描件或不可靠文件会移入：
+- hallucination rate
+- unsupported claim rate
+- unsafe suggestion rate
+- refusal correctness
+- claim-evidence alignment precision / recall
+- evidence-source mismatch rate
 
-```text
-data/guidelines/_archive_scanned/
-```
+论文中若声称显著降低上述错误率，必须提供统计检验、置信区间和可复现的原始结果记录。
 
-索引完整性状态记录在：
-
-```text
-backend/data/chroma_db/index_status.json
-```
-
-只有当索引状态为就绪时，检索器才应正常工作。否则，下游模块应收到空证据或证据不足结果，并触发 fail-closed 路径。
-
-## 7. 技术栈
-
-| 层级 | 工具 |
-| --- | --- |
-| 后端 | FastAPI、LangGraph、Pydantic |
-| 检索 | ChromaDB、多粒度向量索引 |
-| 文档处理 | PyMuPDF、`pymupdf4llm`、`pdfplumber` |
-| 前端 | React、TypeScript、Vite、Ant Design |
-| 交互 | SSE 节点流、证据面板、Trust-Score 展示 |
-| 测试与审计 | pytest、人工回归脚本、索引审计脚本 |
-
-## 8. 运行与验证
+## 6. 运行方式
 
 后端测试：
 
@@ -145,7 +126,7 @@ $env:PYTHONPATH='backend'
 python -m pytest backend/tests -q
 ```
 
-重建知识库索引：
+重建知识库：
 
 ```powershell
 $env:DEBUG='true'
@@ -153,7 +134,7 @@ $env:PYTHONPATH='backend'
 python backend/rebuild_index.py
 ```
 
-审计索引状态：
+审计索引：
 
 ```powershell
 $env:DEBUG='true'
@@ -161,29 +142,37 @@ $env:PYTHONPATH='backend'
 python backend/audit_index.py
 ```
 
-运行人工回归：
+前端构建：
 
 ```powershell
-$env:DEBUG='true'
-$env:PYTHONPATH='backend'
-python backend/run_manual_regression.py
+Set-Location frontend
+npm run build
 ```
 
-## 9. 评测路线
+一键启动脚本：
 
-下一阶段会从可演示原型升级为更完整的证据审计研究工作流：
+```powershell
+.\start-dev.ps1
+```
 
-- **Trap-QA 测试集**：覆盖剂量、禁忌症、证据不足、指南冲突和不安全提问等高风险问题。
-- **Claim-evidence alignment**：将生成回答拆解为关键 claim，并对齐到指南片段、页码和来源。
-- **审计标签体系**：将生成内容标注为 supported、unsupported、contradicted、insufficient evidence 等类别。
-- **结构化审计日志**：记录问题意图、检索证据、生成回答、审计分数和最终门控决策。
-- **可回放审计轨迹**：支持回放 Router、Retriever、Generator、Auditor 和 Trust Gate 的链路决策。
-- **失败类型分析**：区分 retrieval miss、evidence pollution、unsupported claim、over-refusal、under-refusal、page mismatch 等失败类型。
+如果本机 Python 环境不是默认环境，可先设置：
 
-## 10. 使用边界
+```powershell
+$env:MEDAUDIT_PYTHON='你的 python.exe 路径'
+.\start-dev.ps1
+```
 
-- 本项目不是临床决策系统。
+## 7. 医学安全边界
+
+- 本项目不提供临床诊断。
+- 本项目不生成个体化处方。
 - 本项目不替代医生、药师或医疗机构的专业判断。
-- 本项目不能用于真实治疗或处方决策。
-- 所有医学输出都应被视为辅助核验信息。
-- 当证据不足、来源不匹配或知识库不可用时，系统应优先拒答或提示人工复核，而不是自信生成。
+- 所有医学输出都只能作为证据审计实验结果。
+- 当证据不足、来源不匹配、知识库不完整或用户请求越过处方边界时，系统应拒答或提示人工复核。
+
+## 8. 当前开发重点
+
+1. 扩展公开权威儿科用药资料库，并通过 manifest 记录资料准入状态。
+2. 构建 guideline-grounded benchmark，保证每道题都有 gold evidence 和 expected decision。
+3. 建立 Vanilla LLM、Naive RAG、Multi-granularity RAG、TrustScore Gate 和未来 Graph-enhanced method 的对比实验。
+4. 保存原始实验结果、统计检验、置信区间和失败案例，为论文写作提供可审计证据。

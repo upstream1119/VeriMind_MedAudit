@@ -1,5 +1,5 @@
 """
-重建 VeriMind-MedAudit 知识库索引。
+重建 Medaudit-RAG 知识库索引。
 
 执行内容：
 1. 清空 backend/data/chroma_db

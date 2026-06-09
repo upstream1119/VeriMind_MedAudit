@@ -1,5 +1,5 @@
 /**
- * VeriMind-MedAudit 全局状态管理 (Zustand)
+ * Medaudit-RAG 全局状态管理 (Zustand)
  */
 
 import { create } from 'zustand';

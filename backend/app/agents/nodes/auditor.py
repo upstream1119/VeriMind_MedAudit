@@ -1,5 +1,5 @@
 """
-VeriMind-Med 智能体节点: Auditor (幻觉评分与门控裁判)
+Medaudit-RAG 智能体节点: Auditor (幻觉评分与门控裁判)
 ======================================================
 职责:
   1. 获取 Generator 的 `draft_answer` 和 Retriever 提供给的 `evidence`
@@ -51,14 +51,14 @@ def _has_frequency_conflict(state: AuditState, evidence_chunks: list) -> bool:
     )
 
 
-def _reject_frequency_conflict(state: AuditState, evidence_chunks: list, draft_answer: str) -> AuditState:
+def _reject_frequency_conflict(state: AuditState, evidence_chunks: list) -> AuditState:
     top_chunk = evidence_chunks[0]
     s_ret = top_chunk.relevance_score * 10
     w_authority = top_chunk.authority_weight
     state["draft_answer"] = (
         "已拦截：待审计频次与证据推荐频次不一致。"
-        "当前证据支持阿奇霉素静脉滴注 10mg/kg、qd（每日一次）相关方案，"
-        "不支持一天两次/bid。建议由医生或药师结合患儿年龄、体重、病情和指南证据人工复核。"
+        "当前证据支持每日一次（qd），与待审计的一天两次（bid）存在冲突。"
+        "系统不据此生成个体化给药方案，建议结合完整患者信息和原始证据人工复核。"
     )
     state["trust_score"] = compute_trust_score(
         s_ret=s_ret,
@@ -68,6 +68,7 @@ def _reject_frequency_conflict(state: AuditState, evidence_chunks: list, draft_a
     state["current_node"] = "auditor"
     logger.warning("[Agent::Auditor] 频次冲突，跳过 Judge LLM 并强制降级")
     return state
+
 
 class FaithfulnessScore(BaseModel):
     score: float = Field(..., ge=0, le=10, description="对源文档的忠实度打分，0 表示完全无中生有产生幻觉，10 表示严丝合缝")
@@ -121,7 +122,7 @@ def auditor_node(state: AuditState) -> AuditState:
         return state
 
     if _has_frequency_conflict(state, evidence_chunks):
-        return _reject_frequency_conflict(state, evidence_chunks, str(draft_answer))
+        return _reject_frequency_conflict(state, evidence_chunks)
         
     # 拼装裁判所看的上下文
     context_str = "\n\n".join([f"片段{i+1}: " + c.content for i, c in enumerate(evidence_chunks)])

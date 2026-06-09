@@ -1,5 +1,5 @@
 """
-VeriMind-Med Trust-Score 计算器
+Medaudit-RAG Trust-Score 计算器
 =================================
 实现论文 Eq.4 的门控数学公式:
 

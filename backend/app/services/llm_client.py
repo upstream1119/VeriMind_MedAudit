@@ -1,5 +1,5 @@
 """
-VeriMind-Med 统一 LLM 客户端
+Medaudit-RAG 统一 LLM 客户端
 基于 OpenAI 兼容协议封装, 上层 Agent 代码无需感知底层供应商
 支持: 智谱 AI / DashScope / DeepSeek
 """

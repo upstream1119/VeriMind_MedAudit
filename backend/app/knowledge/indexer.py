@@ -1,5 +1,5 @@
 """
-VeriMind-Med 向量索引器 (Vector Indexer)
+Medaudit-RAG 向量索引器 (Vector Indexer)
 =========================================
 职责:
   1. 将 SemanticChunker 产出的 TextChunk 批量写入 ChromaDB

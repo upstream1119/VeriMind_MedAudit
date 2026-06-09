@@ -1,5 +1,5 @@
 """
-VeriMind-Med 智能体工作流 (LangGraph DAG)
+Medaudit-RAG 智能体工作流 (LangGraph DAG)
 =========================================
 编排 Router -> Retriever -> Generator -> Auditor 的流转图
 目前为单向管道 (Pipeline), 但通过使用 StateGraph, 我们为后续

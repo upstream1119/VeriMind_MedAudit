@@ -1,5 +1,5 @@
 """
-VeriMind-Med 全局配置管理
+Medaudit-RAG 全局配置管理
 使用 pydantic-settings 统一管理环境变量与系统参数
 支持多 LLM 供应商切换 (zhipu / dashscope / deepseek)
 """
@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     _CHROMA_DIR = Path(__file__).resolve().parents[1] / "data" / "chroma_db"
 
     # ── 应用基础 ──
-    APP_NAME: str = "VeriMind-Med"
+    APP_NAME: str = "Medaudit-RAG"
     APP_VERSION: str = "0.1.0"
     DEBUG: bool = True
 
@@ -82,7 +82,7 @@ class Settings(BaseSettings):
     CALIBRATION_TAU_BASE: float = Field(default=0.35, description="余弦相似度基准阈值 τ_base")
     CALIBRATION_GAMMA: float = Field(default=20.0, description="放大因子 γ")
 
-    # ── 医学证据等级权重 (VeriMind-Med 新增) ──
+    # ── 医学证据等级权重 ──
     AUTHORITY_WEIGHTS: dict = Field(
         default={
             "national_pharmacopoeia": 1.0,   # 国家药典

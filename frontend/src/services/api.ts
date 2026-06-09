@@ -1,5 +1,5 @@
 /**
- * VeriMind-MedAudit API 服务层
+ * Medaudit-RAG API 服务层
  * 封装与后端的所有 HTTP 通信
  */
 

@@ -1,4 +1,4 @@
-# VeriMind-Med Backend Dependencies
+# Medaudit-RAG Backend Dependencies
 # ── Web 框架 ──
 fastapi>=0.115.0
 uvicorn[standard]>=0.30.0

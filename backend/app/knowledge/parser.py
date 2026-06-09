@@ -1,5 +1,5 @@
 """
-VeriMind-Med 双轨 PDF 解析管线 (Dual-Track Medical PDF Parser)
+Medaudit-RAG 双轨 PDF 解析管线 (Dual-Track Medical PDF Parser)
 ================================================================
 轨道 A: pymupdf4llm → 连续文本段落提取 (双栏自动校正)
 轨道 B: pdfplumber  → 复杂医学表格识别与 Markdown 转录

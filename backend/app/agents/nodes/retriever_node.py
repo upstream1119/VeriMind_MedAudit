@@ -1,5 +1,5 @@
 """
-VeriMind-Med 智能体节点: Retriever (向量检索执行器)
+Medaudit-RAG 智能体节点: Retriever (向量检索执行器)
 ======================================================
 职责:
   1. 读取 Router 产出的 `normalized_query` 和 `intent`

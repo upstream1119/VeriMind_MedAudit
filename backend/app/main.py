@@ -1,5 +1,5 @@
 """
-VeriMind-Med FastAPI 应用入口
+Medaudit-RAG FastAPI 应用入口
 """
 
 import logging
@@ -40,7 +40,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.APP_NAME,
         version=settings.APP_VERSION,
-        description="基于多智能体协同与证据链溯源的高可靠医药决策系统",
+        description="面向儿科用药问答的指南约束证据审计研究原型",
         lifespan=lifespan,
     )
 

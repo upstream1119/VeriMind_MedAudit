@@ -1,5 +1,5 @@
 """
-VeriMind-Med API 路由
+Medaudit-RAG API 路由
 """
 
 import time

@@ -1,5 +1,5 @@
 """
-VeriMind-Med 智能体节点: Generator (严谨医学解答生成)
+Medaudit-RAG 智能体节点: Generator (严谨医学解答生成)
 ======================================================
 职责:
   1. 读取 State 中的 `normalized_query` 和 `evidence`

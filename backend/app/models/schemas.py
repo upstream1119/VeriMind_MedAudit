@@ -1,5 +1,5 @@
 """
-VeriMind-Med 数据模型 (Pydantic Schemas)
+Medaudit-RAG 数据模型 (Pydantic Schemas)
 定义 API 请求/响应、Agent 流转中间态的数据结构
 """
 

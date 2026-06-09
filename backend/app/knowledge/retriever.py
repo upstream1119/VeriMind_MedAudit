@@ -1,5 +1,5 @@
 """
-VeriMind-Med 多粒度检索服务层 (Multi-Granularity Retriever)
+Medaudit-RAG 多粒度检索服务层 (Multi-Granularity Retriever)
 =============================================================
 职责:
   1. 封装三粒度 ChromaDB 查询, 暴露统一的 retrieve() 接口

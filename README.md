@@ -1,56 +1,29 @@
-# Medaudit-RAG
+# MedAudit-RAG
 
-Medaudit-RAG 是一个面向儿科用药问答的指南约束证据审计研究原型。项目关注的不是让大模型给出更像医生的答案，而是评估医学回答是否能够追溯到公开权威资料、是否忠实于证据，以及在证据不足或触及处方边界时是否应拒答或提示人工复核。
+[中文说明](./README.zh-CN.md)
 
-> 本项目仅用于科研实验、方法验证和医学证据审计研究，不构成真实临床诊断、处方或治疗建议。任何医学结论都必须回到已读取的指南、共识、目录或说明书证据；证据不足时应保守处理。
+Rule-aware evidence auditing RAG system for safer pediatric medication QA.
 
-## 1. 研究动机
+MedAudit-RAG is a research prototype for auditing whether pediatric medication answers are supported by guideline evidence. It is not designed to replace doctors, generate prescriptions, or provide clinical treatment advice. The system retrieves evidence, generates constrained answers, audits answer faithfulness, and uses a TrustScore gate to decide whether to answer, refuse, or request human review.
 
-儿科用药问答属于高风险、低容错场景。剂量、频次、给药途径、年龄/体重边界、超说明书用药和药物联用等信息一旦被模型编造或错误外推，就可能形成 unsafe suggestion。普通 RAG 能缓解幻觉，但仍可能出现检索片段不相关、证据重复、回答与证据不一致、证据不足却强行回答等问题。
+> Status: research prototype. The current implementation is a vector RAG + TrustScore baseline with FastAPI, LangGraph, ChromaDB, and a React frontend. Graph-enhanced evidence auditing and expert validation are planned future work.
 
-Medaudit-RAG 的研究目标是构建一条 evidence-grounded auditing workflow，将医学问答拆解为“问题路由 -> 证据检索 -> 受约束生成 -> 证据审计 -> TrustScore 门控”，并为后续 Graph-Enhanced Evidence Auditing 论文实验提供可复现的代码基线。
+## What It Does
 
-## 2. 当前系统能力
+- Routes pediatric medication questions into `DETAIL`, `CONCEPT`, and `CONTEXT` intent types.
+- Retrieves evidence from multi-granularity guideline indexes.
+- Generates answers only from retrieved evidence.
+- Audits retrieval relevance, answer faithfulness, and source authority.
+- Applies TrustScore gating for supported answers, review-required cases, insufficient evidence, and boundary refusal.
+- Displays answer status, TrustScore breakdown, citations, source pages, and evidence snippets in the frontend.
 
-当前仓库实现的是多智能体证据审计原型，主要能力包括：
+## Why It Matters
 
-- Router：标准化儿科用药问题，识别 `DETAIL`、`CONCEPT`、`CONTEXT` 三类意图。
-- Retriever：基于 128 / 512 / 1024 三粒度向量索引召回证据片段。
-- Generator：要求候选回答严格基于检索证据，不允许脱离证据生成确定性医学结论。
-- Auditor：计算检索相关性、证据忠实度和来源权威度，输出 TrustScore 与门控结论。
-- Frontend：展示问答结果、审计状态、TrustScore 分解、证据来源与页码。
-- Source admission：通过 `source_manifest.json` 和准入脚本记录资料来源、状态和可解析性，避免未审核资料污染正式知识库。
+Pediatric medication QA is a high-risk and low-tolerance scenario. Incorrect dosage, frequency, route, age or weight boundary, off-label usage, and drug-combination claims may lead to unsafe suggestions. Standard RAG can reduce hallucination, but it can still retrieve weak evidence, repeat irrelevant snippets, or generate confident answers unsupported by the retrieved content.
 
-当前实现仍是 vector RAG + TrustScore baseline，尚未声称完成 GraphRAG 或专家验证。Graph-enhanced evidence auditing 是后续研究方向。
+MedAudit-RAG focuses on answer auditing, not answer generation alone.
 
-## 3. 知识库与资料准入
-
-正式资料位于 `data/guidelines/`，PDF 原文不进入 Git 版本控制。当前已使用或计划准入的资料必须经过以下检查：
-
-1. 来源是否为公开权威资料。
-2. PDF 是否可抽取文本，是否存在扫描件/OCR 高风险。
-3. 是否记录 `title`、`source_type`、`year`、`publisher`、`url`、`status`、`notes` 等元信息。
-4. 是否适合进入正式索引，或仅作为 staging/候选资料。
-
-正式索引目录为：
-
-```text
-backend/data/chroma_db/
-```
-
-索引完整性状态写入：
-
-```text
-backend/data/chroma_db/index_status.json
-```
-
-资料准入清单：
-
-```text
-data/guidelines/source_manifest.json
-```
-
-## 4. 系统架构
+## Architecture
 
 ```text
 User Query
@@ -62,10 +35,10 @@ Router
 Retriever
     |
     v
-Generator
+Constrained Generator
     |
     v
-Auditor
+Evidence Auditor
     |
     v
 TrustScore Gate
@@ -76,49 +49,66 @@ TrustScore Gate
     +--> boundary_refusal
 ```
 
-TrustScore 的基本形式为：
+TrustScore is based on retrieval relevance, answer faithfulness, and source authority:
 
 ```text
 T = alpha * S_ret + beta * S_faith
 TrustScore = T * W_authority
 ```
 
-其中：
+## Tech Stack
 
-- `S_ret`：检索证据与问题的相关性。
-- `S_faith`：回答是否忠实于证据片段。
-- `W_authority`：资料来源权威度权重。
+- Backend: FastAPI, Python
+- RAG workflow: LangGraph
+- Vector database: ChromaDB
+- Frontend: React, Ant Design, Vite
+- Streaming: Server-Sent Events
+- Testing: pytest
 
-## 5. 研究评测方向
+## Current Repository Scope
 
-后续论文实验将围绕 guideline-grounded pediatric medication safety QA benchmark 展开。该 benchmark 不宣称是真实临床数据集，而是基于公开指南、共识、说明书和目录构建的证据约束评测集。
+The repository currently includes:
 
-每道样本应至少包含：
+- backend API routes for health checks, audit queries, and SSE streaming
+- router, retriever, generator, and auditor nodes
+- TrustScore calculation and source-authority weighting
+- guideline source admission scripts and manifest tracking
+- React frontend for displaying audit status and evidence
+- unit tests for parser, source preparation, and TrustScore behavior
 
-- `sample_id`
-- `question`
-- `risk_labels`
-- `gold_source`
-- `gold_page`
-- `gold_span`
-- `expected_decision`
-- `allowed_answer_scope`
-- `forbidden_claims`
+The current baseline does not claim completed GraphRAG, clinical deployment, or expert medical validation.
 
-核心指标包括：
+## Knowledge Base and Source Admission
 
-- hallucination rate
-- unsupported claim rate
-- unsafe suggestion rate
-- refusal correctness
-- claim-evidence alignment precision / recall
-- evidence-source mismatch rate
+Guideline PDFs are not committed to Git. Sources are tracked through a manifest before entering the formal index.
 
-论文中若声称显著降低上述错误率，必须提供统计检验、置信区间和可复现的原始结果记录。
+Formal index path:
 
-## 6. 运行方式
+```text
+backend/data/chroma_db/
+```
 
-后端测试：
+Index status:
+
+```text
+backend/data/chroma_db/index_status.json
+```
+
+Source manifest:
+
+```text
+data/guidelines/source_manifest.json
+```
+
+## Quick Start
+
+Install backend dependencies:
+
+```powershell
+pip install -r backend/requirements.txt
+```
+
+Run backend tests:
 
 ```powershell
 $env:DEBUG='true'
@@ -126,7 +116,7 @@ $env:PYTHONPATH='backend'
 python -m pytest backend/tests -q
 ```
 
-重建知识库：
+Rebuild the vector index:
 
 ```powershell
 $env:DEBUG='true'
@@ -134,45 +124,64 @@ $env:PYTHONPATH='backend'
 python backend/rebuild_index.py
 ```
 
-审计索引：
+Start the backend:
 
 ```powershell
-$env:DEBUG='true'
 $env:PYTHONPATH='backend'
-python backend/audit_index.py
+python -m uvicorn app.main:app --reload
 ```
 
-前端构建：
+Start the frontend:
 
 ```powershell
 Set-Location frontend
-npm run build
+npm install
+npm run dev
 ```
 
-一键启动脚本：
+## API and Output Shape
 
-```powershell
-.\start-dev.ps1
+Main endpoints:
+
+```text
+GET  /api/health
+POST /api/audit/query
+POST /api/audit/query/stream
 ```
 
-如果本机 Python 环境不是默认环境，可先设置：
+The audit response is designed to expose:
 
-```powershell
-$env:MEDAUDIT_PYTHON='你的 python.exe 路径'
-.\start-dev.ps1
-```
+- normalized query and intent type
+- answer text or refusal message
+- TrustScore and score breakdown
+- retrieved evidence snippets
+- citation source and page
+- final decision such as supported answer, review required, insufficient evidence, or boundary refusal
 
-## 7. 医学安全边界
+## Evaluation Plan
 
-- 本项目不提供临床诊断。
-- 本项目不生成个体化处方。
-- 本项目不替代医生、药师或医疗机构的专业判断。
-- 所有医学输出都只能作为证据审计实验结果。
-- 当证据不足、来源不匹配、知识库不完整或用户请求越过处方边界时，系统应拒答或提示人工复核。
+The planned benchmark is guideline-grounded pediatric medication safety QA. Each sample should include gold evidence, expected decision, allowed answer scope, and forbidden claims.
 
-## 8. 当前开发重点
+Planned metrics include:
 
-1. 扩展公开权威儿科用药资料库，并通过 manifest 记录资料准入状态。
-2. 构建 guideline-grounded benchmark，保证每道题都有 gold evidence 和 expected decision。
-3. 建立 Vanilla LLM、Naive RAG、Multi-granularity RAG、TrustScore Gate 和未来 Graph-enhanced method 的对比实验。
-4. 保存原始实验结果、统计检验、置信区间和失败案例，为论文写作提供可审计证据。
+- hallucination rate
+- unsupported claim rate
+- unsafe suggestion rate
+- refusal correctness
+- claim-evidence alignment precision and recall
+- evidence-source mismatch rate
+
+Any future claim about reducing these errors should be backed by raw outputs, audit traces, confidence intervals, and statistical tests.
+
+## Medical Safety Boundary
+
+This project is for research, method validation, and medical evidence auditing only.
+
+It does not provide clinical diagnosis, individualized prescription, or treatment advice. All generated medical content must be grounded in retrieved guideline, consensus, catalog, or drug-label evidence. When evidence is insufficient, incomplete, mismatched, or outside the allowed answer boundary, the system should refuse or request human review.
+
+## Roadmap
+
+- Expand public and authoritative pediatric medication sources.
+- Build a guideline-grounded benchmark with gold evidence.
+- Compare vanilla LLM, naive RAG, multi-granularity RAG, TrustScore Gate, and future graph-enhanced methods.
+- Save raw outputs, audit traces, failure cases, confidence intervals, and statistical tests for paper writing.

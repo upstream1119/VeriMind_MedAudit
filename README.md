@@ -173,6 +173,27 @@ Planned metrics include:
 
 Any future claim about reducing these errors should be backed by raw outputs, audit traces, confidence intervals, and statistical tests.
 
+## Current Research Status (2026-06-11)
+
+- Current phase: Phase 3. Task 3C, Dev50-v0.3 evidence backfilling, has been completed. The next task is Task 3D, freezing Dev50-v1.0 and running retrieval smoke tests.
+- Current knowledge base: KB-medium-v1. `source_manifest.json` records 25 candidate sources; 22 authoritative sources are included in the formal index, 2 large documents are deferred for full indexing, and 1 source is excluded because of source or quality concerns.
+- Current index state: `index_status.ready=true`, with `detail_128`, `concept_512`, and `context_1024` collections available.
+- Current development set: Dev50-v0.3-kb22, containing 50 samples. 42 samples have page-level `source/page/text_span` evidence, 4 samples are policy-rule cases, and 4 samples remain fail-closed missing-source cases.
+- Current boundary: this repository is still a research prototype and experimental baseline. It does not claim expert validation, clinical effectiveness, or real prescription capability.
+
+## Experiment Cost Control and Caching Discipline
+
+All future model experiments should be cost-aware, cacheable, and reproducible:
+
+1. Record `input_tokens`, `output_tokens`, and `estimated_cost` for every model or judge call.
+2. Persist all raw model outputs, not only parsed conclusions.
+3. Do not repeat a successful call when the same `sample_id + method + model + prompt_version` already exists.
+4. For reruns, execute failed cases only instead of rerunning the whole batch.
+5. Use pairwise judging, but first estimate token usage and cost on 10 samples.
+6. Keep evidence context to 2-4 evidence snippets; do not paste whole guideline pages into prompts.
+7. Write `prompt_version`, `dataset_version`, and `kb_version` into every output file.
+8. Preserve raw outputs, run parameters, random seeds, model versions, and timestamps for auditability.
+
 ## Medical Safety Boundary
 
 This project is for research, method validation, and medical evidence auditing only.

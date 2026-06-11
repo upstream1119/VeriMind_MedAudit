@@ -17,10 +17,7 @@ from collections import Counter, defaultdict
 from dataclasses import asdict
 from pathlib import Path
 
-from app.config import get_settings
-from app.knowledge.chunker import SemanticChunker
-from app.knowledge.indexer import VectorIndexer
-from app.knowledge.parser import DualTrackMedicalParser
+from prepare_kb_sources import compute_sha256, load_manifest
 
 
 logging.basicConfig(
@@ -37,9 +34,34 @@ def _project_root() -> Path:
 
 def _guideline_paths(root: Path) -> list[Path]:
     guideline_dir = root / "data" / "guidelines"
-    pdfs = sorted(guideline_dir.glob("*.pdf"))
+    manifest_path = guideline_dir / "source_manifest.json"
+    manifest = load_manifest(manifest_path)
+    pdfs: list[Path] = []
+
+    for source in manifest["sources"]:
+        if not source.get("included_in_kb"):
+            continue
+        source_id = source.get("source_id", "UNKNOWN")
+        if source.get("status") not in {"approved", "indexed"}:
+            raise ValueError(f"{source_id} 已标记入库但状态不是 approved/indexed")
+
+        filename = source.get("filename")
+        expected_sha = source.get("sha256")
+        if not filename or not expected_sha:
+            raise ValueError(f"{source_id} 缺少 filename 或 sha256")
+
+        pdf_path = guideline_dir / filename
+        if not pdf_path.is_file():
+            raise FileNotFoundError(f"{source_id} 已批准但正式 PDF 不存在: {pdf_path}")
+
+        actual_sha = compute_sha256(pdf_path)
+        if actual_sha != expected_sha:
+            raise ValueError(f"{source_id} SHA-256 不匹配，拒绝重建索引")
+
+        pdfs.append(pdf_path)
+
     if not pdfs:
-        raise FileNotFoundError(f"未在 {guideline_dir} 找到任何 PDF")
+        raise FileNotFoundError(f"manifest 中没有已批准的正式知识库 PDF: {manifest_path}")
     return pdfs
 
 
@@ -85,6 +107,11 @@ def _build_index_status(
 
 
 def main() -> None:
+    from app.config import get_settings
+    from app.knowledge.chunker import SemanticChunker
+    from app.knowledge.indexer import VectorIndexer
+    from app.knowledge.parser import DualTrackMedicalParser
+
     root = _project_root()
     settings = get_settings()
     parser = DualTrackMedicalParser()

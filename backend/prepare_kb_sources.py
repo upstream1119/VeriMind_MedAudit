@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shutil
 from dataclasses import asdict, is_dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -163,9 +164,68 @@ def inspect_staged_sources(
     return manifest
 
 
+def approve_inspected_sources(
+    manifest_path: str | Path,
+    staging_dir: str | Path,
+    formal_dir: str | Path,
+    source_ids: list[str],
+) -> dict[str, Any]:
+    """将已完成体检和人工抽查的 staging PDF 批准进入正式知识库目录。"""
+    manifest = load_manifest(manifest_path)
+    staging_path = Path(staging_dir)
+    formal_path = Path(formal_dir)
+    formal_path.mkdir(parents=True, exist_ok=True)
+    requested_ids = set(source_ids)
+    approved_at = datetime.now(timezone.utc).isoformat()
+    matched_ids: set[str] = set()
+
+    for source in manifest["sources"]:
+        source_id = source.get("source_id")
+        if source_id not in requested_ids:
+            continue
+        matched_ids.add(source_id)
+
+        if source.get("status") not in {"inspected", "approved", "indexed"}:
+            raise ValueError(f"{source_id} 尚未完成可解析性体检，不能批准入库")
+        if source.get("inspection", {}).get("scan_heavy"):
+            raise ValueError(f"{source_id} 被判定为扫描件偏重，不能批准入库")
+        if source.get("content_check", {}).get("status") != "spot_checked":
+            raise ValueError(f"{source_id} 尚未完成 page/content 抽查，不能批准入库")
+
+        filename = source.get("filename")
+        expected_sha = source.get("sha256")
+        if not filename or not expected_sha:
+            raise ValueError(f"{source_id} 缺少 filename 或 sha256，不能批准入库")
+
+        staged_pdf = staging_path / filename
+        formal_pdf = formal_path / filename
+        source_pdf = staged_pdf if staged_pdf.is_file() else formal_pdf
+        if not source_pdf.is_file():
+            raise FileNotFoundError(f"{source_id} 对应 PDF 不存在: {staged_pdf}")
+
+        actual_sha = compute_sha256(source_pdf)
+        if actual_sha != expected_sha:
+            raise ValueError(f"{source_id} SHA-256 不匹配，不能批准入库")
+
+        if source_pdf != formal_pdf:
+            shutil.copy2(source_pdf, formal_pdf)
+
+        source["status"] = "approved"
+        source["included_in_kb"] = True
+        source["approved_at"] = approved_at
+        source.pop("approval_error", None)
+
+    missing_ids = requested_ids - matched_ids
+    if missing_ids:
+        raise ValueError(f"manifest 中不存在 source_id: {sorted(missing_ids)}")
+
+    save_manifest(manifest_path, manifest)
+    return manifest
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="知识库资料准入工具")
-    parser.add_argument("command", choices=["download", "inspect"])
+    parser.add_argument("command", choices=["download", "inspect", "approve"])
     parser.add_argument(
         "--manifest",
         type=Path,
@@ -176,6 +236,12 @@ def main() -> None:
         type=Path,
         default=Path("data/guidelines/_staging"),
     )
+    parser.add_argument(
+        "--formal-dir",
+        type=Path,
+        default=Path("data/guidelines"),
+    )
+    parser.add_argument("--source-id", action="append", default=[])
     args = parser.parse_args()
 
     if args.command == "download":
@@ -202,6 +268,21 @@ def main() -> None:
             for source in manifest["sources"]
         )
         print(f"体检完成: 可解析 {inspected}，扫描件拒绝 {rejected}，失败 {failed}")
+    elif args.command == "approve":
+        if not args.source_id:
+            raise SystemExit("approve 命令必须提供至少一个 --source-id")
+        manifest = approve_inspected_sources(
+            args.manifest,
+            args.staging_dir,
+            args.formal_dir,
+            args.source_id,
+        )
+        approved = [
+            source["source_id"]
+            for source in manifest["sources"]
+            if source.get("included_in_kb")
+        ]
+        print(f"批准入库完成: 当前正式知识库来源 {len(approved)} 份")
 
 
 if __name__ == "__main__":

@@ -6,6 +6,8 @@ import httpx
 import pytest
 
 from prepare_kb_sources import (
+    approve_inspected_sources,
+    compute_sha256,
     download_registered_sources,
     inspect_staged_sources,
     load_manifest,
@@ -196,3 +198,109 @@ def test_download_registered_sources_rejects_non_pdf_response(tmp_path):
     assert source["status"] == "download_failed"
     assert "PDF" in source["download_error"]
     assert not (staging_dir / "not-a-pdf.pdf").exists()
+
+
+def test_approve_inspected_sources_copies_pdf_into_formal_kb(tmp_path):
+    staging_dir = tmp_path / "_staging"
+    formal_dir = tmp_path / "guidelines"
+    staging_dir.mkdir()
+    formal_dir.mkdir()
+    pdf_path = staging_dir / "guideline.pdf"
+    pdf_path.write_bytes(b"%PDF-1.7 approved")
+
+    manifest_path = tmp_path / "source_manifest.json"
+    _write_manifest(
+        manifest_path,
+        [
+            {
+                "source_id": "SRC-005",
+                "title": "已抽查指南",
+                "filename": pdf_path.name,
+                "status": "inspected",
+                "included_in_kb": False,
+                "sha256": "placeholder",
+                "inspection": {"scan_heavy": False},
+                "content_check": {"status": "spot_checked"},
+            }
+        ],
+    )
+    manifest = load_manifest(manifest_path)
+    manifest["sources"][0]["sha256"] = compute_sha256(pdf_path)
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False), encoding="utf-8")
+
+    result = approve_inspected_sources(
+        manifest_path=manifest_path,
+        staging_dir=staging_dir,
+        formal_dir=formal_dir,
+        source_ids=["SRC-005"],
+    )
+
+    source = result["sources"][0]
+    assert source["status"] == "approved"
+    assert source["included_in_kb"] is True
+    assert source["approved_at"]
+    assert (formal_dir / "guideline.pdf").read_bytes() == pdf_path.read_bytes()
+
+
+def test_approve_inspected_sources_requires_content_spot_check(tmp_path):
+    staging_dir = tmp_path / "_staging"
+    formal_dir = tmp_path / "guidelines"
+    staging_dir.mkdir()
+    formal_dir.mkdir()
+    pdf_path = staging_dir / "guideline.pdf"
+    pdf_path.write_bytes(b"%PDF-1.7 missing-spot-check")
+
+    manifest_path = tmp_path / "source_manifest.json"
+    _write_manifest(
+        manifest_path,
+        [
+            {
+                "source_id": "SRC-006",
+                "filename": pdf_path.name,
+                "status": "inspected",
+                "sha256": compute_sha256(pdf_path),
+                "inspection": {"scan_heavy": False},
+                "content_check": {"status": "title_verified"},
+            }
+        ],
+    )
+
+    with pytest.raises(ValueError, match="抽查"):
+        approve_inspected_sources(
+            manifest_path=manifest_path,
+            staging_dir=staging_dir,
+            formal_dir=formal_dir,
+            source_ids=["SRC-006"],
+        )
+
+
+def test_approve_inspected_sources_rejects_hash_mismatch(tmp_path):
+    staging_dir = tmp_path / "_staging"
+    formal_dir = tmp_path / "guidelines"
+    staging_dir.mkdir()
+    formal_dir.mkdir()
+    pdf_path = staging_dir / "guideline.pdf"
+    pdf_path.write_bytes(b"%PDF-1.7 changed")
+
+    manifest_path = tmp_path / "source_manifest.json"
+    _write_manifest(
+        manifest_path,
+        [
+            {
+                "source_id": "SRC-007",
+                "filename": pdf_path.name,
+                "status": "inspected",
+                "sha256": "0" * 64,
+                "inspection": {"scan_heavy": False},
+                "content_check": {"status": "spot_checked"},
+            }
+        ],
+    )
+
+    with pytest.raises(ValueError, match="SHA-256"):
+        approve_inspected_sources(
+            manifest_path=manifest_path,
+            staging_dir=staging_dir,
+            formal_dir=formal_dir,
+            source_ids=["SRC-007"],
+        )

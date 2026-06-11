@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "updated_at": "2026-06-09",
+  "updated_at": "2026-06-11",
   "formal_directory": "data/guidelines",
   "staging_directory": "data/guidelines/_staging",
   "admission_policy": {
@@ -26,6 +26,147 @@
   },
   "sources": [
     {
+      "source_id": "SRC-001",
+      "title": "山东省超药品说明书用药专家共识（2022版）系列——儿科超药品说明书用药专家共识",
+      "year": 2022,
+      "publisher": "中国合理用药探索",
+      "jurisdiction": "CN",
+      "source_type": "expert_consensus",
+      "authority_level": "expert_consensus",
+      "official_page_url": null,
+      "download_url": null,
+      "filename": "中国儿科超药品说明书用药专家共识.pdf",
+      "status": "indexed",
+      "included_in_kb": true,
+      "evidence_types": [
+        "off_label_use",
+        "pediatric_dosing",
+        "route",
+        "evidence_level"
+      ],
+      "can_support": [
+        "儿科超说明书用药证据分级",
+        "部分药物的儿童用法用量和给药途径参考"
+      ],
+      "cannot_support": [
+        "替代具体患者处方决策",
+        "替代最新版国家指南或药品说明书"
+      ],
+      "content_check": {
+        "status": "legacy_spot_checked",
+        "checked_at": "2026-06-09",
+        "note": "本地正文首页可抽取题名、作者、期刊和页码；后续公开 benchmark 前需要补充可公开访问来源链接。"
+      },
+      "file_size": 1760873,
+      "sha256": "82850f798a5b588ff0b7366918ff935d7455efebc622569b2c67c0892617964b"
+    },
+    {
+      "source_id": "SRC-002",
+      "title": "儿童社区获得性肺炎诊疗规范（2019年版）",
+      "year": 2019,
+      "publisher": "国家卫生健康委员会",
+      "jurisdiction": "CN",
+      "source_type": "clinical_guideline",
+      "authority_level": "national",
+      "official_page_url": null,
+      "download_url": "https://www.caivd-org.cn/EditorUpload/Uploads/Temp/file/20200108/6371408609756895282354347.pdf",
+      "filename": "儿童社区获得性肺炎诊疗规范（2019年版）.pdf",
+      "status": "indexed",
+      "included_in_kb": true,
+      "evidence_types": [
+        "diagnosis",
+        "treatment_principle",
+        "assessment",
+        "course"
+      ],
+      "can_support": [
+        "儿童社区获得性肺炎诊疗原则",
+        "治疗后再评估",
+        "病原体相关疗程参考"
+      ],
+      "cannot_support": [
+        "无患者信息时直接开处方",
+        "非 CAP 疾病的治疗结论"
+      ],
+      "content_check": {
+        "status": "legacy_spot_checked",
+        "checked_at": "2026-06-09",
+        "note": "本地 PDF 首页标题和正文可抽取；已用于 CAP 48-72 小时再评估问题。"
+      },
+      "file_size": 466505,
+      "sha256": "52ca8c956bd03ff6ddda1ec6a5ca0195910c1efc0dc7dfda162c492a5aa28e05"
+    },
+    {
+      "source_id": "SRC-003",
+      "title": "儿童肺炎支原体肺炎诊疗指南（2023年版）",
+      "year": 2023,
+      "publisher": "国家卫生健康委员会",
+      "jurisdiction": "CN",
+      "source_type": "clinical_guideline",
+      "authority_level": "national",
+      "official_page_url": "https://www.qinan.gov.cn/info/12182/326421.htm",
+      "download_url": null,
+      "filename": "儿童肺炎支原体肺炎诊疗指南（2023年版）.pdf",
+      "status": "indexed",
+      "included_in_kb": true,
+      "evidence_types": [
+        "diagnosis",
+        "antimicrobial_therapy",
+        "pediatric_dosing",
+        "course"
+      ],
+      "can_support": [
+        "儿童 MPP 诊疗原则",
+        "阿奇霉素给药剂量/频次/疗程参考",
+        "重症 MPP 治疗原则"
+      ],
+      "cannot_support": [
+        "无患者信息时直接处方",
+        "非 MPP 场景的确定性用药建议"
+      ],
+      "content_check": {
+        "status": "legacy_spot_checked",
+        "checked_at": "2026-06-09",
+        "note": "本地 PDF 首页标题和正文可抽取；已用于阿奇霉素频次风险问题。"
+      },
+      "file_size": 852395,
+      "sha256": "d4a6dacdb788a2d923210842071faff368bc8ee94440c2b0c27f87f8b13507c6"
+    },
+    {
+      "source_id": "SRC-004",
+      "title": "国家基本药物目录（2018年版）",
+      "year": 2018,
+      "publisher": "中华人民共和国国家卫生健康委员会",
+      "jurisdiction": "CN",
+      "source_type": "essential_medicines_list",
+      "authority_level": "national",
+      "official_page_url": null,
+      "download_url": "https://platform.who.int/docs/default-source/mca-documents/policy-documents/essential-medicines-and-equipment/chn-mn-78-01-emd-2018-chn-national-essential-drugs-list.pdf",
+      "filename": "国家基本药物目录（2018年版）.pdf",
+      "status": "indexed",
+      "included_in_kb": true,
+      "evidence_types": [
+        "medicine_identity",
+        "dosage_form",
+        "essential_medicine_status"
+      ],
+      "can_support": [
+        "国家基本药物身份",
+        "剂型和目录信息"
+      ],
+      "cannot_support": [
+        "单独作为疾病治疗或剂量处方依据",
+        "个体化处方建议"
+      ],
+      "content_check": {
+        "status": "legacy_spot_checked",
+        "checked_at": "2026-06-09",
+        "note": "本地 PDF 首页标题和发布机构可抽取；仅作为目录和药物身份资料。"
+      },
+      "file_size": 2440217,
+      "sha256": "f4d8085d55ad24f2dc7c5f55b338d4890680d52b2bae27c44a72c82a298ebe9e"
+    },
+    {
       "source_id": "SRC-005",
       "title": "抗菌药物临床应用指导原则（2015年版）",
       "year": 2015,
@@ -36,8 +177,8 @@
       "official_page_url": "https://www.nhc.gov.cn/yzygj/c100068/201508/9f7136d6fb034339a7c9348c72a8a1fd.shtml",
       "download_url": "https://www.nhc.gov.cn/yzygj/c100068/201508/9f7136d6fb034339a7c9348c72a8a1fd/files/1732864152643_67691.pdf",
       "filename": "抗菌药物临床应用指导原则（2015年版）.pdf",
-      "status": "inspected",
-      "included_in_kb": false,
+      "status": "indexed",
+      "included_in_kb": true,
       "evidence_types": [
         "antimicrobial_stewardship",
         "indication",
@@ -66,10 +207,12 @@
         "scan_heavy": false
       },
       "content_check": {
-        "status": "title_verified",
+        "status": "spot_checked",
         "checked_at": "2026-06-09",
-        "note": "首页标题、发布文号与2015版抗菌药物临床应用指导原则一致。"
-      }
+        "note": "已抽查首页、给药途径原则、剂量原则和联合用药原则相关页面；适合支持抗菌药物合理使用、联用和给药途径原则，不作为个体化处方依据。"
+      },
+      "approved_at": "2026-06-09T14:18:12.082291+00:00",
+      "indexed_at": "2026-06-09T22:39:45+08:00"
     },
     {
       "source_id": "SRC-006",
@@ -82,8 +225,8 @@
       "official_page_url": "https://www.nhc.gov.cn/ylyjs/zcwj/202501/f8fcecca59a048bebc4a71847ce57594.shtml",
       "download_url": "https://wsjk.ln.gov.cn/wsjk/zfxxgk/zc/gjjwj/2025012320510759292/2025012320500390775.pdf",
       "filename": "流行性感冒诊疗方案（2025年版）.pdf",
-      "status": "inspected",
-      "included_in_kb": false,
+      "status": "indexed",
+      "included_in_kb": true,
       "evidence_types": [
         "diagnosis",
         "antiviral_therapy",
@@ -112,10 +255,12 @@
         "scan_heavy": false
       },
       "content_check": {
-        "status": "title_verified",
+        "status": "spot_checked",
         "checked_at": "2026-06-09",
-        "note": "首页标题为流行性感冒诊疗方案（2025年版），正文可抽取。"
-      }
+        "note": "已抽查首页、儿童流感治疗、奥司他韦儿童剂量、抗病毒联合/加量禁忌相关页面；适合支持流感抗病毒治疗原则和儿童剂量参考。"
+      },
+      "approved_at": "2026-06-09T14:18:12.082291+00:00",
+      "indexed_at": "2026-06-09T22:39:45+08:00"
     },
     {
       "source_id": "SRC-007",
@@ -158,8 +303,13 @@
       "official_page_url": "https://www.who.int/publications/i/item/9789240062382",
       "download_url": "https://iris.who.int/server/api/core/bitstreams/61517f8b-3a34-413c-ae36-67a059ebe485/content",
       "filename": "WHO_AWaRe_antibiotic_book_2022.pdf",
-      "status": "inspected",
+      "status": "approved",
       "included_in_kb": false,
+      "indexing_policy": {
+        "status": "deferred_full_indexing",
+        "reason": "Large international reference PDF timed out during full-document parsing; keep as a verified source for future scoped indexing.",
+        "next_action": "Use chapter-level scoped indexing for pediatric pneumonia, antibiotic dosing, or medication safety sections."
+      },
       "evidence_types": [
         "antimicrobial_stewardship",
         "indication",
@@ -188,10 +338,27 @@
         "scan_heavy": false
       },
       "content_check": {
-        "status": "title_verified",
-        "checked_at": "2026-06-09",
-        "note": "首页标题与 WHO AWaRe antibiotic book 一致；少量排版字符重复，正式准入前需继续抽查章节和表格。"
-      }
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          3,
+          5,
+          7
+        ],
+        "keywords_found": [
+          "AWaRe",
+          "children",
+          "pneumonia",
+          "dose"
+        ],
+        "scope_warnings": [
+          "Large international reference; monitor retrieval dilution and prefer scoped indexing in experiments.",
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
     },
     {
       "source_id": "SRC-009",
@@ -204,8 +371,8 @@
       "official_page_url": "https://www.who.int/publications/i/item/B09475",
       "download_url": "https://iris.who.int/server/api/core/bitstreams/337edac2-d0aa-4e19-9d72-3acb11d09808/content",
       "filename": "WHO_Model_List_Essential_Medicines_Children_2025.pdf",
-      "status": "inspected",
-      "included_in_kb": false,
+      "status": "approved",
+      "included_in_kb": true,
       "evidence_types": [
         "medicine_identity",
         "dosage_form",
@@ -232,10 +399,25 @@
         "scan_heavy": false
       },
       "content_check": {
-        "status": "title_verified",
-        "checked_at": "2026-06-09",
-        "note": "首页明确为 WHO Model List of Essential Medicines for Children, 10th list。"
-      }
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          5,
+          16
+        ],
+        "keywords_found": [
+          "Essential Medicines for Children",
+          "azithromycin",
+          "ibuprofen"
+        ],
+        "scope_warnings": [
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
     },
     {
       "source_id": "SRC-010",
@@ -248,8 +430,13 @@
       "official_page_url": "https://www.who.int/europe/publications/i/item/9789289057622",
       "download_url": "https://iris.who.int/server/api/core/bitstreams/a484e069-51b4-4f27-933f-18d025350299/content",
       "filename": "WHO_Primary_Health_Care_Children_Adolescents_2022.pdf",
-      "status": "inspected",
+      "status": "approved",
       "included_in_kb": false,
+      "indexing_policy": {
+        "status": "deferred_full_indexing",
+        "reason": "Large international reference PDF is too large for stable full-document indexing in the current pipeline; keep as a verified source for future scoped indexing.",
+        "next_action": "Use chapter-level scoped indexing for pediatric primary care, respiratory infection, or medication safety sections."
+      },
       "evidence_types": [
         "primary_care",
         "assessment",
@@ -277,10 +464,967 @@
         "scan_heavy": false
       },
       "content_check": {
-        "status": "title_verified",
-        "checked_at": "2026-06-09",
-        "note": "首页标题与 WHO 儿童青少年基层卫生保健手册一致；正式准入前需抽查儿科用药章节。"
-      }
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          19,
+          40
+        ],
+        "keywords_found": [
+          "primary health care",
+          "pneumonia",
+          "antibiotic",
+          "child"
+        ],
+        "scope_warnings": [
+          "Large international reference; monitor retrieval dilution and prefer scoped indexing in experiments.",
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
+    },
+    {
+      "source_id": "SRC-011",
+      "title": "NICE NG143: Fever in under 5s: assessment and initial management",
+      "year": 2019,
+      "publisher": "National Institute for Health and Care Excellence",
+      "jurisdiction": "UK",
+      "source_type": "clinical_guideline",
+      "authority_level": "international_guideline",
+      "official_page_url": "https://www.nice.org.uk/guidance/ng143",
+      "download_url": "https://www.nice.org.uk/guidance/ng143/resources/fever-in-under-5s-assessment-and-initial-management-pdf-66141778137541",
+      "filename": "NICE_NG143_Fever_in_under_5s.pdf",
+      "status": "approved",
+      "included_in_kb": true,
+      "evidence_types": [
+        "risk_stratification",
+        "assessment",
+        "safety_boundary",
+        "antipyretic_intervention"
+      ],
+      "can_support": [
+        "5岁以下儿童发热初始评估",
+        "危险信号识别",
+        "退热处理边界",
+        "居家照护与复核提醒"
+      ],
+      "cannot_support": [
+        "中国本土处方标准",
+        "个体化诊断或处方"
+      ],
+      "content_check": {
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          3,
+          28
+        ],
+        "keywords_found": [
+          "Fever in under 5s",
+          "paracetamol",
+          "ibuprofen",
+          "Kawasaki"
+        ],
+        "scope_warnings": [
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "downloaded_at": "2026-06-11T02:02:28.404991+00:00",
+      "resolved_download_url": "https://www.nice.org.uk/guidance/ng143/resources/fever-in-under-5s-assessment-and-initial-management-pdf-66141778137541",
+      "file_size": 218071,
+      "sha256": "31e16b2dfc4dd60e897640aeb5c6a06d132826c2990280526e857c9084ea2aac",
+      "inspection": {
+        "page_count": 39,
+        "sampled_pages": 30,
+        "text_pages": 30,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
+    },
+    {
+      "source_id": "SRC-012",
+      "title": "NICE NG120: Cough (acute): antimicrobial prescribing",
+      "year": 2019,
+      "publisher": "National Institute for Health and Care Excellence",
+      "jurisdiction": "UK",
+      "source_type": "clinical_guideline",
+      "authority_level": "international_guideline",
+      "official_page_url": "https://www.nice.org.uk/guidance/ng120",
+      "download_url": "https://www.nice.org.uk/guidance/ng120/resources/cough-acute-antimicrobial-prescribing-pdf-66141652166341",
+      "filename": "NICE_NG120_Acute_cough_antimicrobial_prescribing.pdf",
+      "status": "approved",
+      "included_in_kb": true,
+      "evidence_types": [
+        "antimicrobial_stewardship",
+        "indication",
+        "safety_boundary",
+        "primary_care"
+      ],
+      "can_support": [
+        "急性咳嗽和急性支气管炎抗菌药使用边界",
+        "不应常规使用抗菌药的场景",
+        "门诊抗菌药审计提醒"
+      ],
+      "cannot_support": [
+        "儿童肺炎完整治疗方案",
+        "中国本土处方标准",
+        "个体化抗菌药处方"
+      ],
+      "content_check": {
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          3,
+          4
+        ],
+        "keywords_found": [
+          "Cough (acute)",
+          "children",
+          "antibiotic",
+          "mucolytic"
+        ],
+        "scope_warnings": [
+          "Includes adult and pediatric content; pediatric answers must verify age-specific evidence before use.",
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "downloaded_at": "2026-06-11T02:02:29.064900+00:00",
+      "resolved_download_url": "https://www.nice.org.uk/guidance/ng120/resources/cough-acute-antimicrobial-prescribing-pdf-66141652166341",
+      "file_size": 273618,
+      "sha256": "786b5d3966b029588b1accd876b522083f76ffea8d2ccb46896c3409d437a65c",
+      "inspection": {
+        "page_count": 42,
+        "sampled_pages": 30,
+        "text_pages": 30,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
+    },
+    {
+      "source_id": "SRC-013",
+      "title": "NICE NG9: Bronchiolitis in children: diagnosis and management",
+      "year": 2015,
+      "publisher": "National Institute for Health and Care Excellence",
+      "jurisdiction": "UK",
+      "source_type": "clinical_guideline",
+      "authority_level": "international_guideline",
+      "official_page_url": "https://www.nice.org.uk/guidance/ng9",
+      "download_url": "https://www.nice.org.uk/guidance/ng9/resources/bronchiolitis-in-children-diagnosis-and-management-pdf-51048523717",
+      "filename": "NICE_NG9_Bronchiolitis_in_children.pdf",
+      "status": "approved",
+      "included_in_kb": true,
+      "evidence_types": [
+        "diagnosis",
+        "assessment",
+        "safety_boundary",
+        "respiratory_disease"
+      ],
+      "can_support": [
+        "儿童毛细支气管炎诊断和管理边界",
+        "喘息/呼吸困难相关高危识别",
+        "入院和出院评估边界"
+      ],
+      "cannot_support": [
+        "普通肺炎治疗方案",
+        "常规雾化用药处方",
+        "中国本土处方标准"
+      ],
+      "content_check": {
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          3,
+          10,
+          11
+        ],
+        "keywords_found": [
+          "Bronchiolitis in children",
+          "oxygen",
+          "antibiotics",
+          "salbutamol"
+        ],
+        "scope_warnings": [
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "downloaded_at": "2026-06-11T02:02:29.570148+00:00",
+      "resolved_download_url": "https://www.nice.org.uk/guidance/ng9/resources/bronchiolitis-in-children-diagnosis-and-management-pdf-51048523717",
+      "file_size": 159934,
+      "sha256": "108c9803ab621f1973bf4ad796576a0adc331eb0af57c02af3db07c7391d6584",
+      "inspection": {
+        "page_count": 27,
+        "sampled_pages": 27,
+        "text_pages": 27,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
+    },
+    {
+      "source_id": "SRC-014",
+      "title": "NICE CG183: Drug allergy: diagnosis and management",
+      "year": 2014,
+      "publisher": "National Institute for Health and Care Excellence",
+      "jurisdiction": "UK",
+      "source_type": "clinical_guideline",
+      "authority_level": "international_guideline",
+      "official_page_url": "https://www.nice.org.uk/guidance/cg183",
+      "download_url": "https://www.nice.org.uk/guidance/cg183/resources/drug-allergy-diagnosis-and-management-pdf-35109811020229",
+      "filename": "NICE_CG183_Drug_allergy.pdf",
+      "status": "approved",
+      "included_in_kb": true,
+      "evidence_types": [
+        "allergy",
+        "contraindication",
+        "safety_boundary",
+        "medical_history"
+      ],
+      "can_support": [
+        "药物过敏识别和记录",
+        "用药前过敏史审计提醒",
+        "禁忌遗漏和人工复核边界"
+      ],
+      "cannot_support": [
+        "具体药物剂量",
+        "替代个体化过敏评估",
+        "中国本土处方标准"
+      ],
+      "content_check": {
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          3
+        ],
+        "keywords_found": [
+          "Drug allergy",
+          "children",
+          "document",
+          "referral"
+        ],
+        "scope_warnings": [
+          "Includes adult and pediatric content; pediatric answers must verify age-specific evidence before use.",
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "downloaded_at": "2026-06-11T02:02:33.096772+00:00",
+      "resolved_download_url": "https://www.nice.org.uk/guidance/cg183/resources/drug-allergy-diagnosis-and-management-pdf-35109811020229",
+      "file_size": 161659,
+      "sha256": "c1935c1cb7d2ea71e94bb9b35b8ced0397d7e22a0aa41c43b4e567e212cd34ca",
+      "inspection": {
+        "page_count": 30,
+        "sampled_pages": 30,
+        "text_pages": 30,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
+    },
+    {
+      "source_id": "SRC-015",
+      "title": "NICE NG254: Suspected sepsis in under 16s: recognition, diagnosis and early management",
+      "year": 2024,
+      "publisher": "National Institute for Health and Care Excellence",
+      "jurisdiction": "UK",
+      "source_type": "clinical_guideline",
+      "authority_level": "international_guideline",
+      "official_page_url": "https://www.nice.org.uk/guidance/ng254",
+      "download_url": "https://www.nice.org.uk/guidance/ng254/resources/suspected-sepsis-in-under-16s-recognition-diagnosis-and-early-management-pdf-66144017065669",
+      "filename": "NICE_NG254_Suspected_sepsis_under_16s.pdf",
+      "status": "approved",
+      "included_in_kb": true,
+      "evidence_types": [
+        "risk_stratification",
+        "urgent_assessment",
+        "safety_boundary",
+        "infection"
+      ],
+      "can_support": [
+        "16岁以下疑似脓毒症风险识别",
+        "发热高危场景线下评估边界",
+        "不能直接开处方的安全提醒"
+      ],
+      "cannot_support": [
+        "普通发热直接用药方案",
+        "个体化诊断或处方",
+        "中国本土急诊处置标准"
+      ],
+      "content_check": {
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          3,
+          10
+        ],
+        "keywords_found": [
+          "Suspected sepsis in under 16s",
+          "antibiotic",
+          "risk",
+          "children"
+        ],
+        "scope_warnings": [
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "downloaded_at": "2026-06-11T02:02:34.617459+00:00",
+      "resolved_download_url": "https://www.nice.org.uk/guidance/ng254/resources/suspected-sepsis-in-under-16s-recognition-diagnosis-and-early-management-pdf-66144017065669",
+      "file_size": 283040,
+      "sha256": "b8129c0682cd4a7a0237a7247e0407f9e1936c010c3304c32c916c7553fec64a",
+      "inspection": {
+        "page_count": 52,
+        "sampled_pages": 30,
+        "text_pages": 30,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
+    },
+    {
+      "source_id": "SRC-016",
+      "title": "NICE NG245: Asthma diagnosis, monitoring and chronic asthma management",
+      "year": 2024,
+      "publisher": "National Institute for Health and Care Excellence",
+      "jurisdiction": "UK",
+      "source_type": "clinical_guideline",
+      "authority_level": "international_guideline",
+      "official_page_url": "https://www.nice.org.uk/guidance/ng245",
+      "download_url": "https://www.nice.org.uk/guidance/ng245/resources/asthma-diagnosis-monitoring-and-chronic-asthma-management-bts-nice-sign-pdf-66143958279109",
+      "filename": "NICE_NG245_Asthma_diagnosis_monitoring_management.pdf",
+      "status": "approved",
+      "included_in_kb": true,
+      "evidence_types": [
+        "diagnosis",
+        "monitoring",
+        "inhaled_therapy",
+        "chronic_disease_management"
+      ],
+      "can_support": [
+        "儿童哮喘诊断和监测边界",
+        "吸入治疗和长期管理背景",
+        "喘息/雾化问题的鉴别边界"
+      ],
+      "cannot_support": [
+        "普通肺炎常规雾化或吸入激素",
+        "单药说明书剂量替代",
+        "中国本土处方标准"
+      ],
+      "content_check": {
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          3,
+          9
+        ],
+        "keywords_found": [
+          "Asthma",
+          "children",
+          "inhaled",
+          "monitoring"
+        ],
+        "scope_warnings": [
+          "Includes adult and pediatric content; pediatric answers must verify age-specific evidence before use.",
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "downloaded_at": "2026-06-11T02:02:35.205535+00:00",
+      "resolved_download_url": "https://www.nice.org.uk/guidance/ng245/resources/asthma-diagnosis-monitoring-and-chronic-asthma-management-bts-nice-sign-pdf-66143958279109",
+      "file_size": 413652,
+      "sha256": "5e0101a680f6c4a74561af802cf5dd0c182283c7f22a27338737e85d37334d1c",
+      "inspection": {
+        "page_count": 64,
+        "sampled_pages": 30,
+        "text_pages": 30,
+        "image_pages": 1,
+        "scan_heavy": false
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
+    },
+    {
+      "source_id": "SRC-017",
+      "title": "NICE NG84: Sore throat (acute): antimicrobial prescribing",
+      "year": 2018,
+      "publisher": "National Institute for Health and Care Excellence",
+      "jurisdiction": "UK",
+      "source_type": "clinical_guideline",
+      "authority_level": "international_guideline",
+      "official_page_url": "https://www.nice.org.uk/guidance/ng84",
+      "download_url": "https://www.nice.org.uk/guidance/ng84/resources/sore-throat-acute-antimicrobial-prescribing-pdf-1837694694085",
+      "filename": "NICE_NG84_Sore_throat_acute_antimicrobial_prescribing.pdf",
+      "status": "approved",
+      "included_in_kb": true,
+      "evidence_types": [
+        "antimicrobial_prescribing",
+        "upper_respiratory_infection",
+        "safety_boundary"
+      ],
+      "can_support": [
+        "sore throat antimicrobial prescribing boundaries",
+        "when antibiotics are not routinely indicated",
+        "international comparison evidence"
+      ],
+      "cannot_support": [
+        "China-specific prescribing standards",
+        "individualized prescription decisions",
+        "pediatric pneumonia treatment regimens"
+      ],
+      "content_check": {
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          3,
+          4,
+          6
+        ],
+        "keywords_found": [
+          "Sore throat (acute)",
+          "children",
+          "antibiotic",
+          "review"
+        ],
+        "scope_warnings": [
+          "Includes adult and pediatric content; pediatric answers must verify age-specific evidence before use.",
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "downloaded_at": "2026-06-11T03:25:59.958435+00:00",
+      "resolved_download_url": "https://www.nice.org.uk/guidance/ng84/resources/sore-throat-acute-antimicrobial-prescribing-pdf-1837694694085",
+      "file_size": 209432,
+      "sha256": "19e7744b05dccd211010716dff922a2a6e9b1948dce88e1b8ee356ac0a62095f",
+      "inspection": {
+        "page_count": 29,
+        "sampled_pages": 29,
+        "text_pages": 29,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
+    },
+    {
+      "source_id": "SRC-018",
+      "title": "NICE NG91: Otitis media (acute): antimicrobial prescribing",
+      "year": 2018,
+      "publisher": "National Institute for Health and Care Excellence",
+      "jurisdiction": "UK",
+      "source_type": "clinical_guideline",
+      "authority_level": "international_guideline",
+      "official_page_url": "https://www.nice.org.uk/guidance/ng91",
+      "download_url": "https://www.nice.org.uk/guidance/ng91/resources/otitis-media-acute-antimicrobial-prescribing-pdf-1837750121413",
+      "filename": "NICE_NG91_Otitis_media_acute_antimicrobial_prescribing.pdf",
+      "status": "approved",
+      "included_in_kb": true,
+      "evidence_types": [
+        "antimicrobial_prescribing",
+        "ear_infection",
+        "safety_boundary"
+      ],
+      "can_support": [
+        "acute otitis media antimicrobial prescribing boundaries",
+        "self-care and review advice",
+        "international comparison evidence"
+      ],
+      "cannot_support": [
+        "China-specific prescribing standards",
+        "non-ear infection antibiotic use",
+        "individualized prescription decisions"
+      ],
+      "content_check": {
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          3,
+          4,
+          6
+        ],
+        "keywords_found": [
+          "Otitis media (acute)",
+          "children",
+          "antibiotic",
+          "review"
+        ],
+        "scope_warnings": [
+          "Includes adult and pediatric content; pediatric answers must verify age-specific evidence before use.",
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "downloaded_at": "2026-06-11T03:26:00.797195+00:00",
+      "resolved_download_url": "https://www.nice.org.uk/guidance/ng91/resources/otitis-media-acute-antimicrobial-prescribing-pdf-1837750121413",
+      "file_size": 209412,
+      "sha256": "a2a080da8eef0a78f66663a53e7f98934e29d5e9a3f8684e9c75ff53aaf9b1af",
+      "inspection": {
+        "page_count": 28,
+        "sampled_pages": 28,
+        "text_pages": 28,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
+    },
+    {
+      "source_id": "SRC-019",
+      "title": "NICE NG79: Sinusitis (acute): antimicrobial prescribing",
+      "year": 2017,
+      "publisher": "National Institute for Health and Care Excellence",
+      "jurisdiction": "UK",
+      "source_type": "clinical_guideline",
+      "authority_level": "international_guideline",
+      "official_page_url": "https://www.nice.org.uk/guidance/ng79",
+      "download_url": "https://www.nice.org.uk/guidance/ng79/resources/sinusitis-acute-antimicrobial-prescribing-pdf-1837642625989",
+      "filename": "NICE_NG79_Sinusitis_acute_antimicrobial_prescribing.pdf",
+      "status": "approved",
+      "included_in_kb": true,
+      "evidence_types": [
+        "antimicrobial_prescribing",
+        "upper_respiratory_infection",
+        "safety_boundary"
+      ],
+      "can_support": [
+        "acute sinusitis antimicrobial prescribing boundaries",
+        "self-care and review advice",
+        "international comparison evidence"
+      ],
+      "cannot_support": [
+        "China-specific prescribing standards",
+        "pediatric pneumonia regimens",
+        "individualized prescription decisions"
+      ],
+      "content_check": {
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          3,
+          6,
+          14
+        ],
+        "keywords_found": [
+          "Sinusitis (acute)",
+          "children",
+          "antibiotic",
+          "review"
+        ],
+        "scope_warnings": [
+          "Includes adult and pediatric content; pediatric answers must verify age-specific evidence before use.",
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "downloaded_at": "2026-06-11T03:30:37.249371+00:00",
+      "resolved_download_url": "https://www.nice.org.uk/guidance/ng79/resources/sinusitis-acute-antimicrobial-prescribing-pdf-1837642625989",
+      "file_size": 206105,
+      "sha256": "683b0aa348e26b091d8b69e7b142c8d288721bf411d6dd2d3b4b69351ae81c09",
+      "inspection": {
+        "page_count": 28,
+        "sampled_pages": 28,
+        "text_pages": 28,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
+    },
+    {
+      "source_id": "SRC-020",
+      "title": "NICE NG224: Urinary tract infection in under 16s: diagnosis and management",
+      "year": 2022,
+      "publisher": "National Institute for Health and Care Excellence",
+      "jurisdiction": "UK",
+      "source_type": "clinical_guideline",
+      "authority_level": "international_guideline",
+      "official_page_url": "https://www.nice.org.uk/guidance/ng224",
+      "download_url": "https://www.nice.org.uk/guidance/ng224/resources/urinary-tract-infection-in-under-16s-diagnosis-and-management-pdf-66143835667141",
+      "filename": "NICE_NG224_UTI_under_16s_diagnosis_management.pdf",
+      "status": "approved",
+      "included_in_kb": true,
+      "evidence_types": [
+        "diagnosis",
+        "antimicrobial_prescribing",
+        "pediatric_infection",
+        "review_boundary"
+      ],
+      "can_support": [
+        "UTI assessment in children under 16",
+        "diagnosis and management boundaries",
+        "review and referral cues"
+      ],
+      "cannot_support": [
+        "respiratory infection treatment",
+        "China-specific prescribing standards",
+        "individualized prescription decisions"
+      ],
+      "content_check": {
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          3,
+          7
+        ],
+        "keywords_found": [
+          "Urinary tract infection in under 16s",
+          "children",
+          "antibiotic",
+          "urine"
+        ],
+        "scope_warnings": [
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "downloaded_at": "2026-06-11T03:30:37.811751+00:00",
+      "resolved_download_url": "https://www.nice.org.uk/guidance/ng224/resources/urinary-tract-infection-in-under-16s-diagnosis-and-management-pdf-66143835667141",
+      "file_size": 184727,
+      "sha256": "22896a03c66d63a48933aa4da72c80a091b3cb7692197fb9e0ff6795c04c9782",
+      "inspection": {
+        "page_count": 31,
+        "sampled_pages": 30,
+        "text_pages": 30,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
+    },
+    {
+      "source_id": "SRC-021",
+      "title": "NICE NG109: Urinary tract infection (lower): antimicrobial prescribing",
+      "year": 2018,
+      "publisher": "National Institute for Health and Care Excellence",
+      "jurisdiction": "UK",
+      "source_type": "clinical_guideline",
+      "authority_level": "international_guideline",
+      "official_page_url": "https://www.nice.org.uk/guidance/ng109",
+      "download_url": "https://www.nice.org.uk/guidance/ng109/resources/urinary-tract-infection-lower-antimicrobial-prescribing-pdf-66141546350533",
+      "filename": "NICE_NG109_Lower_UTI_antimicrobial_prescribing.pdf",
+      "status": "approved",
+      "included_in_kb": true,
+      "evidence_types": [
+        "antimicrobial_prescribing",
+        "urinary_tract_infection",
+        "safety_boundary"
+      ],
+      "can_support": [
+        "lower UTI antimicrobial prescribing boundaries",
+        "review advice",
+        "international comparison evidence"
+      ],
+      "cannot_support": [
+        "respiratory infection treatment",
+        "China-specific prescribing standards",
+        "individualized prescription decisions"
+      ],
+      "content_check": {
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          3,
+          4,
+          6
+        ],
+        "keywords_found": [
+          "Urinary tract infection (lower)",
+          "children",
+          "antibiotic",
+          "review"
+        ],
+        "scope_warnings": [
+          "Includes adult and pediatric content; pediatric answers must verify age-specific evidence before use.",
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "downloaded_at": "2026-06-11T03:26:03.039987+00:00",
+      "resolved_download_url": "https://www.nice.org.uk/guidance/ng109/resources/urinary-tract-infection-lower-antimicrobial-prescribing-pdf-66141546350533",
+      "file_size": 263455,
+      "sha256": "63123c8b2c7638cfe96e967a114b178f9c0c145d754b7c53af76f2990b1d2ecf",
+      "inspection": {
+        "page_count": 41,
+        "sampled_pages": 30,
+        "text_pages": 30,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
+    },
+    {
+      "source_id": "SRC-022",
+      "title": "NICE NG111: Pyelonephritis (acute): antimicrobial prescribing",
+      "year": 2018,
+      "publisher": "National Institute for Health and Care Excellence",
+      "jurisdiction": "UK",
+      "source_type": "clinical_guideline",
+      "authority_level": "international_guideline",
+      "official_page_url": "https://www.nice.org.uk/guidance/ng111",
+      "download_url": "https://www.nice.org.uk/guidance/ng111/resources/pyelonephritis-acute-antimicrobial-prescribing-pdf-66141593379781",
+      "filename": "NICE_NG111_Acute_pyelonephritis_antimicrobial_prescribing.pdf",
+      "status": "approved",
+      "included_in_kb": true,
+      "evidence_types": [
+        "antimicrobial_prescribing",
+        "urinary_tract_infection",
+        "safety_boundary"
+      ],
+      "can_support": [
+        "acute pyelonephritis antimicrobial prescribing boundaries",
+        "review and referral advice",
+        "international comparison evidence"
+      ],
+      "cannot_support": [
+        "respiratory infection treatment",
+        "China-specific prescribing standards",
+        "individualized prescription decisions"
+      ],
+      "content_check": {
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          3,
+          4,
+          6
+        ],
+        "keywords_found": [
+          "Pyelonephritis (acute)",
+          "children",
+          "antibiotic",
+          "review"
+        ],
+        "scope_warnings": [
+          "Includes adult and pediatric content; pediatric answers must verify age-specific evidence before use.",
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "downloaded_at": "2026-06-11T03:30:38.435719+00:00",
+      "resolved_download_url": "https://www.nice.org.uk/guidance/ng111/resources/pyelonephritis-acute-antimicrobial-prescribing-pdf-66141593379781",
+      "file_size": 215971,
+      "sha256": "affae70b43dec1d575f6e65bab55a5242796e37b9b055f2aeca7da621cbb0c47",
+      "inspection": {
+        "page_count": 32,
+        "sampled_pages": 30,
+        "text_pages": 30,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
+    },
+    {
+      "source_id": "SRC-023",
+      "title": "NICE NG190: Secondary bacterial infection of eczema and other common skin conditions: antimicrobial prescribing",
+      "year": 2021,
+      "publisher": "National Institute for Health and Care Excellence",
+      "jurisdiction": "UK",
+      "source_type": "clinical_guideline",
+      "authority_level": "international_guideline",
+      "official_page_url": "https://www.nice.org.uk/guidance/ng190",
+      "download_url": "https://www.nice.org.uk/guidance/ng190/resources/secondary-bacterial-infection-of-eczema-and-other-common-skin-conditions-antimicrobial-prescribing-pdf-66142075429573",
+      "filename": "NICE_NG190_Eczema_skin_secondary_infection_antimicrobial_prescribing.pdf",
+      "status": "approved",
+      "included_in_kb": true,
+      "evidence_types": [
+        "antimicrobial_prescribing",
+        "skin_infection",
+        "safety_boundary"
+      ],
+      "can_support": [
+        "skin infection antimicrobial prescribing boundaries",
+        "when antibiotics may not be needed",
+        "international comparison evidence"
+      ],
+      "cannot_support": [
+        "respiratory infection treatment",
+        "China-specific prescribing standards",
+        "individualized prescription decisions"
+      ],
+      "content_check": {
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          3,
+          5
+        ],
+        "keywords_found": [
+          "Secondary bacterial infection of eczema",
+          "children",
+          "antibiotic",
+          "reassess"
+        ],
+        "scope_warnings": [
+          "Includes adult and pediatric content; pediatric answers must verify age-specific evidence before use.",
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "downloaded_at": "2026-06-11T03:30:38.997828+00:00",
+      "resolved_download_url": "https://www.nice.org.uk/guidance/ng190/resources/secondary-bacterial-infection-of-eczema-and-other-common-skin-conditions-antimicrobial-prescribing-pdf-66142075429573",
+      "file_size": 213346,
+      "sha256": "83fb6e83a29a3d515c3194f3df33b6a72d71b81a30c52b03aef1e4465d9dcde6",
+      "inspection": {
+        "page_count": 32,
+        "sampled_pages": 30,
+        "text_pages": 30,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
+    },
+    {
+      "source_id": "SRC-024",
+      "title": "NICE NG141: Cellulitis and erysipelas: antimicrobial prescribing",
+      "year": 2019,
+      "publisher": "National Institute for Health and Care Excellence",
+      "jurisdiction": "UK",
+      "source_type": "clinical_guideline",
+      "authority_level": "international_guideline",
+      "official_page_url": "https://www.nice.org.uk/guidance/ng141",
+      "download_url": "https://www.nice.org.uk/guidance/ng141/resources/cellulitis-and-erysipelas-antimicrobial-prescribing-pdf-66141774778309",
+      "filename": "NICE_NG141_Cellulitis_erysipelas_antimicrobial_prescribing.pdf",
+      "status": "approved",
+      "included_in_kb": true,
+      "evidence_types": [
+        "antimicrobial_prescribing",
+        "skin_infection",
+        "safety_boundary"
+      ],
+      "can_support": [
+        "cellulitis and erysipelas antimicrobial prescribing boundaries",
+        "review advice",
+        "international comparison evidence"
+      ],
+      "cannot_support": [
+        "respiratory infection treatment",
+        "China-specific prescribing standards",
+        "individualized prescription decisions"
+      ],
+      "content_check": {
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          3,
+          4,
+          6
+        ],
+        "keywords_found": [
+          "Cellulitis and erysipelas",
+          "children",
+          "antibiotic",
+          "review"
+        ],
+        "scope_warnings": [
+          "Includes adult and pediatric content; pediatric answers must verify age-specific evidence before use.",
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "downloaded_at": "2026-06-11T03:30:39.605597+00:00",
+      "resolved_download_url": "https://www.nice.org.uk/guidance/ng141/resources/cellulitis-and-erysipelas-antimicrobial-prescribing-pdf-66141774778309",
+      "file_size": 261476,
+      "sha256": "46739c839ee4664ee3af7fdf7c0a11e81e73e69c73cbb45f64b03490beaa51bd",
+      "inspection": {
+        "page_count": 42,
+        "sampled_pages": 30,
+        "text_pages": 30,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
+    },
+    {
+      "source_id": "SRC-025",
+      "title": "NICE NG113: Urinary tract infection (catheter-associated): antimicrobial prescribing",
+      "year": 2018,
+      "publisher": "National Institute for Health and Care Excellence",
+      "jurisdiction": "UK",
+      "source_type": "clinical_guideline",
+      "authority_level": "international_guideline",
+      "official_page_url": "https://www.nice.org.uk/guidance/ng113",
+      "download_url": "https://www.nice.org.uk/guidance/ng113/resources/urinary-tract-infection-catheterassociated-antimicrobial-prescribing-pdf-66141596739013",
+      "filename": "NICE_NG113_Catheter_associated_UTI_antimicrobial_prescribing.pdf",
+      "status": "approved",
+      "included_in_kb": true,
+      "evidence_types": [
+        "antimicrobial_prescribing",
+        "urinary_tract_infection",
+        "safety_boundary"
+      ],
+      "can_support": [
+        "catheter-associated UTI antimicrobial prescribing boundaries",
+        "review advice",
+        "international comparison evidence"
+      ],
+      "cannot_support": [
+        "respiratory infection treatment",
+        "China-specific prescribing standards",
+        "individualized prescription decisions"
+      ],
+      "content_check": {
+        "status": "spot_checked",
+        "checked_at": "2026-06-11",
+        "method": "title page plus keyword-linked body-page sampling",
+        "checked_page_numbers": [
+          1,
+          3,
+          4,
+          6
+        ],
+        "keywords_found": [
+          "catheter-associated",
+          "children",
+          "antibiotic",
+          "review"
+        ],
+        "scope_warnings": [
+          "Includes adult and pediatric content; pediatric answers must verify age-specific evidence before use.",
+          "International supplementary evidence; not a substitute for China-specific prescribing standards."
+        ],
+        "note": "Title and intended-use body content were verified. Approval remains limited to the declared can_support scope."
+      },
+      "downloaded_at": "2026-06-11T03:30:40.180098+00:00",
+      "resolved_download_url": "https://www.nice.org.uk/guidance/ng113/resources/urinary-tract-infection-catheterassociated-antimicrobial-prescribing-pdf-66141596739013",
+      "file_size": 253937,
+      "sha256": "c10c5454311822ae5c006f2edb37449e7a1f4924f331aebc2bdd601787fcb73e",
+      "inspection": {
+        "page_count": 40,
+        "sampled_pages": 30,
+        "text_pages": 30,
+        "image_pages": 0,
+        "scan_heavy": false
+      },
+      "approved_at": "2026-06-11T03:39:21.997589+00:00"
     }
   ]
 }

@@ -29,6 +29,14 @@ def _collection_names() -> list[str]:
 
 def _expected_sources(root: Path) -> list[str]:
     guideline_dir = root / "data" / "guidelines"
+    manifest_path = guideline_dir / "source_manifest.json"
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        return sorted(
+            source["filename"]
+            for source in manifest.get("sources", [])
+            if source.get("included_in_kb") and source.get("filename")
+        )
     return sorted(pdf.name for pdf in guideline_dir.glob("*.pdf"))
 
 
